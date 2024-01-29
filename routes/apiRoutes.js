@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const UserDetailsAccounts = require('../models/userAccountDetails');
+const Applicants = require('../models/applicant');
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
@@ -58,5 +59,56 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
         return response.status(500).json({message: 'Internal Server'})
     }
 })
+
+router.post('/vehicleRegistration', async (request, response) => {
+    try {
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel, userAccountNumber,
+        } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+  
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+        newApplicant.save();
+
+        return response.status(200).json({ message: 'Vehicle registered successfully' });
+    } catch (error) {
+        console.error(error.message, 'vehicle-registration');
+        return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+    }
+});
+
+router.post('/fastagRecharge', async (request, response) => {
+    try {
+        const { userAccountNumber, rechargeAmount } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+         
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+
+        return response.status(200).json({ message: 'Fastag recharge successful' });
+    } catch (error) {
+        console.error(error.message, 'fastag-recharge');
+        return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
+    }
+});
 
 module.exports = router;
