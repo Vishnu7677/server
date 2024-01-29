@@ -55,8 +55,9 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
     } 
     catch (error) {
         console.log(error.message, 'account details');
-        return response.status(500).json({message: 'Internal Server'})
+        return response.status(500).json({message: 'Internal Server Error at Account Details API'})
     }
-})
+});
+
 
 module.exports = router;
