@@ -127,6 +127,46 @@ router.post('/validate-otp', async (req, res) => {
 });
 
 
+// Route for generating debit card PIN
+router.post('/generate-Debit-Card-Pin', async (req, res) => {
+    try {
+      const { userAccountNumber, debitCardPin, confirmDebitCardPin } = req.body;
+  
+      if (debitCardPin !== confirmDebitCardPin) {
+        return res.status(400).json({ error: 'PINs do not match' });
+      }
+  
+      const user = await UserDetailsAccounts.findOne({ userAccountNumber });
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Ensure all nested properties are initialized
+      if (!user.userDebitCardDetails) {
+        user.userDebitCardDetails = {};
+      }
+  
+      if (!user.userDebitCardDetails.userDebitCardPin) {
+        user.userDebitCardDetails.userDebitCardPin = {};
+      }
+  
+      // Update user's debit card PIN
+      user.userDebitCardDetails.userDebitCardPin.userDebitcardpin = debitCardPin;
+      user.userDebitCardDetails.userDebitCardPin.confirmuserDebitcardpin = confirmDebitCardPin;
+  
+      await user.save();
+  
+      return res.json({ success: true, message: 'Debit card PIN generated successfully' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+
+
+
 router.put('/blockCard/:userAccountNumber', async (req, res) => {
     try {
       const { userAccountNumber } = req.params;
