@@ -3,7 +3,6 @@ const router = express.Router();
 
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
 
-
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 });
@@ -105,7 +104,7 @@ router.post('/otp-send', async (req,res)=> {
             subject: 'Royal Islamic Bank User Authentication',
             html:
              `  <div>
-                    <p>Dear Customer,</p>
+                    <p>Dear ${existingOtp.accountHolderName},</p>
                     <p>
                         Your OTP is ${otpcode}. Do not share it with anyone by any means. This is confidential and to be used by you only.
                     </p>
@@ -152,6 +151,5 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
-
 
 module.exports = router;
