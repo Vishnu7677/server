@@ -73,6 +73,8 @@ const updateForm60Details = new mongoose.Schema({
         enum: ['SMS', 'Email', 'Call'],
        
       }, 
+      otp:String,
+
 })
 
 const Form60Details= mongoose.model('Form60Details', updateForm60Details);
