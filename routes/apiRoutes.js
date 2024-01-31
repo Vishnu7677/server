@@ -189,7 +189,61 @@ router.put('/blockCard/:userAccountNumber', async (req, res) => {
   });
 
 
+  router.put('/update-address/:accountNumber', async (req, res) => {
+    try {
+        const { accountNumber } = req.params;
+        const { communicationAddress, pincode, state, city, village } = req.body;
 
+        const user = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check and initialize accountHolderAddress if it's undefined
+        if (!user.accountHolderAddress) {
+            user.accountHolderAddress = {};
+        }
+
+        // Update address fields
+        user.accountHolderAddress.communicationAddress = communicationAddress;
+        user.accountHolderAddress.pincode = pincode;
+        user.accountHolderAddress.state = state;
+        user.accountHolderAddress.city = city;
+        user.accountHolderAddress.village = village;
+
+        await user.save();
+
+        res.json({ message: 'Address updated successfully' });
+    } catch (error) {
+        console.error('Error updating address:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+router.post('/createReissueCard', async (req, res) => {
+    try {
+        const { userAccountNumber } = req.body;
+        const srn = generateUniqueSRN();
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        userDetails.userDebitCardDetails.reissueCard = { srn };
+        await userDetails.save();
+
+        res.json({ srn });
+    } catch (error) {
+        console.error('Error creating reissue card request:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+function generateUniqueSRN() {
+    return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+}
 
 
 
