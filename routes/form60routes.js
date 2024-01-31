@@ -5,7 +5,7 @@ const router = express.Router();
 
 //creating update form 60 user details
 
-router.post("/", async (req, res) => {
+router.post("/userdetails", async (req, res) => {
     try {
       const newform60Userdetails = new Form60Details(req.body);
       await newform60Userdetails.save();
@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
     }
   });
   //Getting All update form 60 user details
-  router.get("/alluserdetails", async (req, res) => {
+  router.get("/userdetails", async (req, res) => {
     try {
       const form60Userdetails = await Form60Details.find();
       res.json(form60Userdetails);
