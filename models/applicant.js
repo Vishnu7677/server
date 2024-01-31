@@ -7,7 +7,7 @@ const applicantSchema = new mongoose.Schema({
 
     customerDetails: { type: mongoose.Schema.Types.ObjectId, ref: 'UserDetailsAccounts' },
     
-})
+});
 
 const Applicants = mongoose.model('applicant', applicantSchema);
 

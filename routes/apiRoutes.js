@@ -8,6 +8,51 @@ router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 });
 
+router.post('/purchase', async (request, response) => {
+    try {
+
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel,
+            customerName, mobileNumber, emailId, address, pincode, city, state
+        } = request.body;
+
+        
+        const userAccountNumber = parseInt(request.body.userAccountNumber);
+        if (/pattern/.test(userAccountNumber)) {
+            return response.status(400).json({ error: 'User account number must be 9 digits' });
+        }
+
+
+
+        let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            userDetails = new UserDetailsAccounts({
+                userAccountNumber,
+                // Add other user details here
+            });
+            await userDetails.save();
+        }
+
+        // Store the vehicle registration details
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+        await newApplicant.save();
+
+        // Assuming success, send success response
+        return response.status(200).json({ message: 'Purchase details stored successfully' });
+    } catch (error) {
+        console.error(error.message, 'purchase-error');
+        return response.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.post('/accountCreation', async (request, response)=> {
     try {
         const { 
@@ -82,12 +127,15 @@ router.post('/vehicleRegistration', async (request, response) => {
             customerDetails: userDetails._id,
         });
 
+    
         newApplicant.save();
 
         return response.status(200).json({ message: 'Vehicle registered successfully' });
     } catch (error) {
         console.error(error.message, 'vehicle-registration');
-        return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+        // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+
     }
 });
 
@@ -109,6 +157,11 @@ router.post('/fastagRecharge', async (request, response) => {
         console.error(error.message, 'fastag-recharge');
         return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
     }
+   
 });
+
+
+
+
 
 module.exports = router;
