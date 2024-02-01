@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const nodemailer = require('nodemailer');
 const UserDetailsAccounts = require('../models/userAccountDetails');
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
@@ -62,15 +62,15 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
 
 router.post('/fdformdetails', async (request, response)=> {
     try {
-        const { 
+        const {
             FixeddepositAccountNumber, FixeddepositTitle, FixeddepositFirstname, FixeddepositMiddlename, FixeddepositSurname, FixeddepositDateOfBirth,
-            FixeddepositMobileNumber, FixeddepositEmailId, FixeddepositLine1, FixeddepositLine2, FixeddepositTown,FixeddepositCountry,FixeddepositPostcode,FixeddepositAmount,FixeddepositTermyears
-            ,FixeddepositTermmonths,FixeddepositTermdays,FixeddepositInterestrate,FixeddepositInterestpay,FixeddepositBankname,NomineeTitle,NomineeFirstname,NomineeMiddlename,NomineeSurname,NomineeDateOfBirth,NomineeMobileNumber
-            ,NomineeEmailId,NomineeLine1,NomineeLine2,NomineeTown,NomineeCountry,NomineePostcode
+            FixeddepositMobileNumber, FixeddepositEmailId, FixeddepositLine1, FixeddepositLine2, FixeddepositTown, FixeddepositCountry, FixeddepositPostcode, FixeddepositAmount, FixeddepositTermyears,
+            FixeddepositTermmonths, FixeddepositTermdays, FixeddepositInterestrate, FixeddepositInterestpay, FixeddepositBankname, NomineeTitle, NomineeFirstname, NomineeMiddlename, NomineeSurname, NomineeDateOfBirth, NomineeMobileNumber,
+            NomineeEmailId, NomineeLine1, NomineeLine2, NomineeTown, NomineeCountry, NomineePostcode
         } = request.body;
 
-        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({FixeddepositAccountNumber: FixeddepositAccountNumber});
-        if(!isAccountNumExists){
+        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({ FixeddepositAccountNumber: FixeddepositAccountNumber });
+        if (!isAccountNumExists) {
             const newAccountCreation = new UserDetailsFixeddeposit({
                 FixeddepositAccountNumber: FixeddepositAccountNumber,
                 FixeddepositTitle: FixeddepositTitle,
@@ -92,7 +92,7 @@ router.post('/fdformdetails', async (request, response)=> {
                 FixeddepositInterestrate: FixeddepositInterestrate,
                 FixeddepositInterestpay: FixeddepositInterestpay,
                 FixeddepositBankname: FixeddepositBankname,
-                NomineeTitle:NomineeTitle,
+                NomineeTitle: NomineeTitle,
                 NomineeFirstname: NomineeFirstname,
                 NomineeMiddlename: NomineeMiddlename,
                 NomineeSurname: NomineeSurname,
@@ -103,20 +103,53 @@ router.post('/fdformdetails', async (request, response)=> {
                 NomineeLine2: NomineeLine2,
                 NomineeTown: NomineeTown,
                 NomineeCountry: NomineeCountry,
-                NomineePostcode:NomineePostcode,
+                NomineePostcode: NomineePostcode,
             });
             newAccountCreation.save();
-            return response.status(200).json({message: 'FD created successfully'})
+            
+            // Send email notification
+            const email = FixeddepositEmailId;
+            await sendEmailNotification(email);
+            
+            return response.status(200).json({ message: 'FD created successfully' });
+        } else {
+            return response.status(400).json({ message: 'FD is already exists in bank' });
         }
-        else{
-            return response.status(400).json({message: 'FD is already exists in bank'})
-        }
-    } 
-    catch (error) {
+    } catch (error) {
         console.log(error.message, 'account-creation');
-        return response.status(500).json({message: 'Internal Server Error at User FD Creation'});
+        return response.status(500).json({ message: 'Internal Server Error at User FD Creation' });
+    }
+
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Fixed Deposit Created',
+                text: 'Your fixed deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
     }
 });
+
+
 
 
 router.post('/rdformdetails', async (request, response)=> {
@@ -166,6 +199,8 @@ router.post('/rdformdetails', async (request, response)=> {
                 
             });
             newAccountCreation.save();
+            const email = RecurringdepositEmailId;
+            await sendEmailNotification(email);
             return response.status(200).json({message: 'RD created successfully'})
         }
         else{
@@ -176,6 +211,36 @@ router.post('/rdformdetails', async (request, response)=> {
         console.log(error.message, 'account-creation');
         return response.status(500).json({message: 'Internal Server Error at User RD Creation'});
     }
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Recurring Deposit Created',
+                text: 'Your Recurring deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
+    }
 });
+
+
+
 
 module.exports = router;
