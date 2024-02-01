@@ -141,8 +141,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-  
-      // Ensure all nested properties are initialized
+
       if (!user.userDebitCardDetails) {
         user.userDebitCardDetails = {};
       }
@@ -150,8 +149,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
       if (!user.userDebitCardDetails.userDebitCardPin) {
         user.userDebitCardDetails.userDebitCardPin = {};
       }
-  
-      // Update user's debit card PIN
+
       user.userDebitCardDetails.userDebitCardPin.userDebitcardpin = debitCardPin;
       user.userDebitCardDetails.userDebitCardPin.confirmuserDebitcardpin = confirmDebitCardPin;
   
@@ -200,12 +198,9 @@ router.put('/blockCard/:userAccountNumber', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check and initialize accountHolderAddress if it's undefined
         if (!user.accountHolderAddress) {
             user.accountHolderAddress = {};
         }
-
-        // Update address fields
         user.accountHolderAddress.communicationAddress = communicationAddress;
         user.accountHolderAddress.pincode = pincode;
         user.accountHolderAddress.state = state;
@@ -244,8 +239,6 @@ router.post('/createReissueCard', async (req, res) => {
 function generateUniqueSRN() {
     return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
-
-
 
 
 module.exports = router;
