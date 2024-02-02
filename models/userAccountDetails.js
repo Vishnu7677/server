@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
 
+const transactionSchema = new mongoose.Schema({
+  date: String,
+  description: String,
+  withdrawal: Number,
+  deposit: Number,
+  balance: Number,
+});
+
+
 const domesticLimitSchema = new mongoose.Schema({
   cashWithdrawalLimit: { type: Number, default: 0 },
   retailTransactionLimit: { type: Number, default: 0 },
@@ -50,6 +59,7 @@ const UserDetailsAccounts = mongoose.model('UserDetailsAccounts', userDetailsAcc
   reissueCard : reissueCardSchema
 })
 
+
 const addressSchema = new mongoose.Schema({
   communicationAddress: { type: String },
   pincode: { type: String },
@@ -58,14 +68,14 @@ const addressSchema = new mongoose.Schema({
   village: { type: String },
 });
 
-
 const userDetailsAccounts = new mongoose.Schema({
-    userAccountNumber: {type: Number},
+     userAccountNumber: {type: Number},
     accountHolderName: {type: String},
     bankBranchName: {type: String},
     userAccountType: {type: String},
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
+
 
     userMobileNumber: {type: String},
 
@@ -78,8 +88,10 @@ const userDetailsAccounts = new mongoose.Schema({
     userAccountBalance: {type: String},
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
+
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
+
 
 
 const payLaterAccount = new mongoose.Schema({
