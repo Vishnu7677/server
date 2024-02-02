@@ -7,6 +7,7 @@ const apiRoutes = require('./routes/apiRoutes')
 // sairam inwardremitance code ends
 const dotenv = require('dotenv');
 
+
 // 
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -17,6 +18,9 @@ const { sendOTP, verifyOTP } = require('./controllers/otpController');
 // app.use('/api/auth', authRoutes);
  
 
+
+
+const {UserDetailsAccounts} = require("./models/userAccountDetails");
 
 
 
@@ -59,6 +63,7 @@ app.post('/api/verify', verifyOTP);
 
 app.use("/auth", require("./routes/authRoutes")); 
 app.use("/api", (require("./routes/apiRoutes")));
+app.use("/form60Userdetails", require("./routes/form60routes")); 
 
 app.listen(port, ()=>console.log(`Server Running at ${port}`));         
 
