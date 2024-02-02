@@ -1,8 +1,10 @@
 const PhoneNumber = require('libphonenumber-js');
 
-const accountSid = 'ACfdfeaffec43c8c13f10e42cf399cd018';
-const authToken = '68f99ebfc605390c4ad83ef9b7b54035';
-const twilioPhoneNumber = '+12064960783';
+
+const accountSid = 'AC97e881d061710d39ae499bb1797a8a0a';
+const authToken = 'f5e7dfc8b42c59f95fe435e42ed24718';
+const twilioPhoneNumber = '+17622254672';
+
 
 const client = require('twilio')(accountSid, authToken);
 const nodemailer = require('nodemailer');
@@ -71,4 +73,6 @@ const sendOTP = (otpMethod, mobileNumber, email, otp) => {
     }
 };
 
+
 module.exports = sendOTP;
+
