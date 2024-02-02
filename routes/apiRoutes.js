@@ -1,8 +1,35 @@
 const express = require("express");
 const router = express.Router();
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
 
+router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
+router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
+
+router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
+router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
+
+
+//  sairam  inward remittancecode
+const nodemailer = require('nodemailer');
+const Applicants = require('../models/applicant');
+ const UserAccount = require('../models/userAccountDetails');
+  
+const { sendOTP, verifyOTP } = require('../controllers/otpController');
+
+ 
+router.post('/send-OneTP', sendOTP);
+router.post('/verify-OneTP', verifyOTP);
+
+// scheduled ends
+//   
+// 
 const UserDetailsAccounts = require('../models/userAccountDetails');
-
+ 
+//
+ router.use(express.json());
+// 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 });
@@ -59,4 +86,10 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
     }
 })
 
+//  
+
+ 
+router.post('/submitForm', inwardController.submitForm);
+ 
+//   
 module.exports = router;

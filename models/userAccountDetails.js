@@ -14,6 +14,13 @@ const userDetailsAccounts = new mongoose.Schema({
     userAccountBalance: {type: String}
 });
 
+
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
 module.exports = UserDetailsAccounts;
+
+ 
+
+
+
+ 
