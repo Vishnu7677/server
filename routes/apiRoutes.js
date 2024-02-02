@@ -1,6 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
+const nodemailer = require('nodemailer');
+const UserDetailsAccounts = require('../models/userAccountDetails');
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
+
+
+
 
 const {UserDetailsAccounts,PayLaterAccount} = require('../models/userAccountDetails');
 
@@ -516,6 +522,190 @@ router.put('/payLaterAccount/pay', async (req, res) => {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   });
+
+
+
+router.post('/fdformdetails', async (request, response)=> {
+    try {
+        const {
+            FixeddepositAccountNumber, FixeddepositTitle, FixeddepositFirstname, FixeddepositMiddlename, FixeddepositSurname, FixeddepositDateOfBirth,
+            FixeddepositMobileNumber, FixeddepositEmailId, FixeddepositLine1, FixeddepositLine2, FixeddepositTown, FixeddepositCountry, FixeddepositPostcode, FixeddepositAmount, FixeddepositTermyears,
+            FixeddepositTermmonths, FixeddepositTermdays, FixeddepositInterestrate, FixeddepositInterestpay, FixeddepositBankname, NomineeTitle, NomineeFirstname, NomineeMiddlename, NomineeSurname, NomineeDateOfBirth, NomineeMobileNumber,
+            NomineeEmailId, NomineeLine1, NomineeLine2, NomineeTown, NomineeCountry, NomineePostcode
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({ FixeddepositAccountNumber: FixeddepositAccountNumber });
+        if (!isAccountNumExists) {
+            const newAccountCreation = new UserDetailsFixeddeposit({
+                FixeddepositAccountNumber: FixeddepositAccountNumber,
+                FixeddepositTitle: FixeddepositTitle,
+                FixeddepositFirstname: FixeddepositFirstname,
+                FixeddepositMiddlename: FixeddepositMiddlename,
+                FixeddepositSurname: FixeddepositSurname,
+                FixeddepositDateOfBirth: FixeddepositDateOfBirth,
+                FixeddepositMobileNumber: FixeddepositMobileNumber,
+                FixeddepositEmailId: FixeddepositEmailId,
+                FixeddepositLine1: FixeddepositLine1,
+                FixeddepositLine2: FixeddepositLine2,
+                FixeddepositTown: FixeddepositTown,
+                FixeddepositCountry: FixeddepositCountry,
+                FixeddepositPostcode: FixeddepositPostcode,
+                FixeddepositAmount: FixeddepositAmount,
+                FixeddepositTermyears: FixeddepositTermyears,
+                FixeddepositTermmonths: FixeddepositTermmonths,
+                FixeddepositTermdays: FixeddepositTermdays,
+                FixeddepositInterestrate: FixeddepositInterestrate,
+                FixeddepositInterestpay: FixeddepositInterestpay,
+                FixeddepositBankname: FixeddepositBankname,
+                NomineeTitle: NomineeTitle,
+                NomineeFirstname: NomineeFirstname,
+                NomineeMiddlename: NomineeMiddlename,
+                NomineeSurname: NomineeSurname,
+                NomineeDateOfBirth: NomineeDateOfBirth,
+                NomineeMobileNumber: NomineeMobileNumber,
+                NomineeEmailId: NomineeEmailId,
+                NomineeLine1: NomineeLine1,
+                NomineeLine2: NomineeLine2,
+                NomineeTown: NomineeTown,
+                NomineeCountry: NomineeCountry,
+                NomineePostcode: NomineePostcode,
+            });
+            newAccountCreation.save();
+            
+            // Send email notification
+            const email = FixeddepositEmailId;
+            await sendEmailNotification(email);
+            
+            return response.status(200).json({ message: 'FD created successfully' });
+        } else {
+            return response.status(400).json({ message: 'FD is already exists in bank' });
+        }
+    } catch (error) {
+        console.log(error.message, 'account-creation');
+        return response.status(500).json({ message: 'Internal Server Error at User FD Creation' });
+    }
+
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Fixed Deposit Created',
+                text: 'Your fixed deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
+    }
+});
+
+
+
+
+router.post('/rdformdetails', async (request, response)=> {
+    try {
+        const { 
+            RecurringdepositAccountNumber, RecurringdepositTitle, RecurringdepositFirstname, RecurringdepositMiddlename, RecurringdepositSurname, RecurringdepositDateOfBirth,
+            RecurringdepositMobileNumber, RecurringdepositEmailId, RecurringdepositLine1, RecurringdepositLine2, RecurringdepositTown,RecurringdepositCountry,RecurringdepositPostcode,RecurringdepositAmount,RecurringdepositTermyears
+            ,RecurringdepositTermmonths,RecurringdepositTermdays,RecurringdepositInterestrate,RecurringdepositInterestpay,RecurringdepositBankname,RecurringNomineeTitle,RecurringNomineeFirstname,RecurringNomineeMiddlename,RecurringNomineeSurname,RecurringNomineeDateOfBirth,RecurringNomineeMobileNumber
+            ,RecurringNomineeEmailId,RecurringNomineeLine1,RecurringNomineeLine2,RecurringNomineeTown,RecurringNomineeCountry,RecurringNomineePostcode
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({RecurringdepositAccountNumber: RecurringdepositAccountNumber});
+        if(!isAccountNumExists){
+            const newAccountCreation = new UserDetailsFixeddeposit({
+                RecurringdepositAccountNumber: RecurringdepositAccountNumber,
+                RecurringdepositTitle: RecurringdepositTitle,
+                RecurringdepositFirstname: RecurringdepositFirstname,
+                RecurringdepositMiddlename: RecurringdepositMiddlename,
+                RecurringdepositSurname: RecurringdepositSurname,
+                RecurringdepositDateOfBirth: RecurringdepositDateOfBirth,
+                RecurringdepositMobileNumber: RecurringdepositMobileNumber,
+                RecurringdepositEmailId: RecurringdepositEmailId,
+                RecurringdepositLine1: RecurringdepositLine1,
+                RecurringdepositLine2: RecurringdepositLine2,
+                RecurringdepositTown: RecurringdepositTown,
+                RecurringdepositCountry: RecurringdepositCountry,
+                RecurringdepositPostcode: RecurringdepositPostcode,
+                RecurringdepositAmount: RecurringdepositAmount,
+                RecurringdepositTermyears: RecurringdepositTermyears,
+                RecurringdepositTermmonths: RecurringdepositTermmonths,
+                RecurringdepositTermdays: RecurringdepositTermdays,
+                RecurringdepositInterestrate: RecurringdepositInterestrate,
+                RecurringdepositInterestpay: RecurringdepositInterestpay,
+                RecurringdepositBankname: RecurringdepositBankname,
+                RecurringNomineeTitle:RecurringNomineeTitle,
+                RecurringNomineeFirstname: RecurringNomineeFirstname,
+                RecurringNomineeMiddlename: RecurringNomineeMiddlename,
+                RecurringNomineeSurname: RecurringNomineeSurname,
+                RecurringNomineeDateOfBirth: RecurringNomineeDateOfBirth,
+                RecurringNomineeMobileNumber: RecurringNomineeMobileNumber,
+                RecurringNomineeEmailId: RecurringNomineeEmailId,
+                RecurringNomineeLine1: RecurringNomineeLine1,
+                RecurringNomineeLine2: RecurringNomineeLine2,
+                RecurringNomineeTown: RecurringNomineeTown,
+                RecurringNomineeCountry: RecurringNomineeCountry,
+                RecurringNomineePostcode:RecurringNomineePostcode,
+                
+            });
+            newAccountCreation.save();
+            const email = RecurringdepositEmailId;
+            await sendEmailNotification(email);
+            return response.status(200).json({message: 'RD created successfully'})
+        }
+        else{
+            return response.status(400).json({message: 'RD is already exists in bank'})
+        }
+    } 
+    catch (error) {
+        console.log(error.message, 'account-creation');
+        return response.status(500).json({message: 'Internal Server Error at User RD Creation'});
+    }
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Recurring Deposit Created',
+                text: 'Your Recurring deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
+    }
+});
+
+
 
 
 module.exports = router;
