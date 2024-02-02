@@ -1,5 +1,110 @@
 const express = require("express");
 const router = express.Router();
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const AWS = require("aws-sdk")
+const UserDetailsAccounts = require('../models/userAccountDetails');
+
+
+
+
+
+
+router.post("/generateCertificate", async (request, response) => {
+  try {
+    const {
+      accountNumber,
+      bankBranchName,
+      accountHolderName,
+      accountHolderAddress,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    } = request.body;
+
+   
+
+    const newCertificate = new InterestCertificate({
+      accountNumber,
+      accountHolderName,
+      accountHolderAddress,
+      bankBranchName,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    });
+   
+  
+    let interestPaid = 0;
+    let taxWithheld = 0;
+
+    if (interestPeriod === "Monthly") {
+      interestPaid = calculateMonthlyInterest(startDate, endDate);
+      taxWithheld = calculateMonthlyTax(interestPaid);
+    } else if (interestPeriod === "FinancialYear") {
+      interestPaid = calculateFinancialYearInterest(startDate, endDate);
+      taxWithheld = calculateFinancialYearTax(interestPaid);
+    }
+
+    newCertificate.interestPaid = interestPaid;
+    newCertificate.taxWithheld = taxWithheld;
+
+    await newCertificate.save();
+
+    const buffers = [];
+    doc.on("data", (buffer) => buffers.push(buffer));
+    doc.on("end", () => {
+      const pdfBuffer = Buffer.concat(buffers);
+
+      response.setHeader("Content-Type", "application/pdf");
+      response.setHeader(
+        "Content-Disposition",
+        'attachment; filename="interest_certificate.pdf"'
+      );
+
+      response.status(200).end(pdfBuffer);
+    });
+
+    doc.end();
+
+    console.log(`PDF generated successfully for Account ${accountNumber}`);
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    response
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+
+function calculateMonthlyInterest(startDate, endDate) {
+  
+  return 100; 
+}
+
+function calculateMonthlyTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+function calculateFinancialYearInterest(startDate, endDate) {
+ 
+  return 500; 
+}
+
+function calculateFinancialYearTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+
+
+
+
 const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
@@ -16,23 +121,24 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 const Applicants = require('../models/applicant');
   
-// const { sendOTP, verifyOTP } = require('../controllers/otpController');
+
 
  
-router.post('/send-OneTP', sendOTP);
-router.post('/verify-OneTP', verifyOTP);
+// router.post('/send-OneTP', sendOTP);
+// router.post('/verify-OneTP', verifyOTP);
 
 // scheduled ends
 //   
 // 
-const UserDetailsAccounts = require('../models/userAccountDetails');
+
  
 //
  router.use(express.json());
 // 
+
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
-=======
+
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
 
@@ -45,18 +151,18 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
-const {UserDetailsAccounts,PayLaterAccount} = require('../models/userAccountDetails');
+const {PayLaterAccount} = require('../models/userAccountDetails');
 
 
 
 
 
-const sendOTP = require('../utils/sendOtp');
+
 const bcrypt = require('bcrypt');
 
 
 
-const {UserDetailsAccounts} = require('../models/userAccountDetails');
+
 
 
 
@@ -75,13 +181,13 @@ router.post('/purchase', async (request, response) => {
             customerName, mobileNumber, emailId, address, pincode, city, state
         } = request.body;
 
-        
+        const isAccountNumExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
+        if(!isAccountNumExists){
+
         const userAccountNumber = parseInt(request.body.userAccountNumber);
         if (/pattern/.test(userAccountNumber)) {
             return response.status(400).json({ error: 'User account number must be 9 digits' });
         }
-
-
 
         let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
 
@@ -106,10 +212,12 @@ router.post('/purchase', async (request, response) => {
 
         // Assuming success, send success response
         return response.status(200).json({ message: 'Purchase details stored successfully' });
-    } catch (error) {
+    } 
+  }catch (error) {
         console.error(error.message, 'purchase-error');
         return response.status(500).json({ error: 'Internal Server Error' });
     }
+  
 });
 
 
@@ -130,6 +238,7 @@ router.post('/accountCreation', async (request, response) => {
             // Hash the debit card PIN before saving
             const hashedDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.userDebitcardpin.toString(), 10);
             const hashedConfirmDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.confirmuserDebitcardpin.toString(), 10);
+
 
             const newAccountCreation = new UserDetailsAccounts({
                 userAccountNumber: userAccountNumber,
@@ -272,10 +381,12 @@ router.post('/verify-otp', async (request, response)=> {
                 return response.status(400).json({ message: 'Invalid OTP' });
             }
         }
+        
         else{
             return response.status(400).json({message: 'Email not found'})
         }
     } 
+  
     catch (error) {
         console.log(error.message, 'otp verification');
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
@@ -286,7 +397,7 @@ router.post('/verify-otp', async (request, response)=> {
 
 
 
-const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+// const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -451,7 +562,7 @@ function generateUniqueSRN() {
 
 
 
-  const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+  // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -865,6 +976,7 @@ router.post('/rdformdetails', async (request, response)=> {
         }
         else{
             return response.status(400).json({message: 'RD is already exists in bank'})
+
         }
     } 
     catch (error) {
@@ -899,6 +1011,34 @@ router.post('/rdformdetails', async (request, response)=> {
         }
     }
 });
+
+
+router.get('/userDetails/:accountNumber', async (request, response)=> {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const userDetails = await UserDetailsAccounts.findOne({userAccountNumber: accountNumber});
+        
+        if (userDetails) {
+            return response.status(200).json({ details: userDetails,});
+          
+        } 
+        else if (selectedUser && selectedUser.accountHolderPAN !== accountHolderPAN) {
+          return response.status(400).json({ message: 'PAN number does not match with the account holder'});
+         
+        }
+       
+        else {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+
+    } 
+    catch (error) {
+        console.log(error.message, 'account details');
+        return response.status(500).json({message: 'Internal Server'});
+
+        
+    }
+})
 
 
 

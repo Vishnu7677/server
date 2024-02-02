@@ -52,12 +52,7 @@ const userDebitCardDetails = new mongoose.Schema({
 
 
 
-const UserDetailsAccounts = mongoose.model('UserDetailsAccounts', userDetailsAccounts);
-  userDebiitCardExpiryDate: {type: String},
-  userDebitCardStatus :{type: String, default: 'active' },
-  userDebitCardPin : userDebitCardPin,
-  reissueCard : reissueCardSchema
-})
+
 
 
 const addressSchema = new mongoose.Schema({
@@ -93,7 +88,7 @@ const userDetailsAccounts = new mongoose.Schema({
         street: { type: String },
         city: { type: String },
         // Add more address details if necessary
-        zipCode: { type: String }}
+        zipCode: { type: String }},
 
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: {type: String},
@@ -106,6 +101,9 @@ const userDetailsAccounts = new mongoose.Schema({
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
 
+
+
+module.exports = UserDetailsAccounts;
 
 const payLaterAccount = new mongoose.Schema({
     accountNumber: Number,
@@ -125,6 +123,7 @@ const payLaterAccount = new mongoose.Schema({
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
 module.exports = {UserDetailsAccounts,PayLaterAccount};
+
 
 
 
