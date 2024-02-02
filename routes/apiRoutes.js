@@ -5,7 +5,7 @@ const fs = require("fs");
 const AWS = require("aws-sdk")
 const UserDetailsAccounts = require('../models/userAccountDetails');
 
-const InterestCertificate = require('../models/userAccountDetails');
+// const InterestCertificate = require('../models/userAccountDetails');
 
 
 
