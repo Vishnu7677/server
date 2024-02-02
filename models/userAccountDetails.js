@@ -84,10 +84,22 @@ const userDetailsAccounts = new mongoose.Schema({
 
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
+
+    
+    
+    firstName: { type: String },
+    lastName: { type: String },
+    address: {
+        street: { type: String },
+        city: { type: String },
+        // Add more address details if necessary
+        zipCode: { type: String }}
+
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: {type: String},
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
+
 
 
 });

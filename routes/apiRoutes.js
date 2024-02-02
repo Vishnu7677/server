@@ -13,6 +13,7 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
+
 const Applicants = require('../models/applicant');
   
 // const { sendOTP, verifyOTP } = require('../controllers/otpController');
@@ -66,7 +67,55 @@ router.get("/", (req, res) => {
 });
 
 
+router.post('/purchase', async (request, response) => {
+    try {
+
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel,
+            customerName, mobileNumber, emailId, address, pincode, city, state
+        } = request.body;
+
+        
+        const userAccountNumber = parseInt(request.body.userAccountNumber);
+        if (/pattern/.test(userAccountNumber)) {
+            return response.status(400).json({ error: 'User account number must be 9 digits' });
+        }
+
+
+
+        let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            userDetails = new UserDetailsAccounts({
+                userAccountNumber,
+                // Add other user details here
+            });
+            await userDetails.save();
+        }
+
+        // Store the vehicle registration details
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+        await newApplicant.save();
+
+        // Assuming success, send success response
+        return response.status(200).json({ message: 'Purchase details stored successfully' });
+    } catch (error) {
+        console.error(error.message, 'purchase-error');
+        return response.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
 router.post('/accountCreation', async (request, response) => {
+
     try {
         const {
             userAccountNumber, accountHolderName, bankBranchName, userAccountType, userDateOfBirth, userEmailId,
@@ -862,5 +911,67 @@ router.post('/rdformdetails', async (request, response)=> {
 router.post('/submitForm', inwardController.submitForm);
  
    
+
+
+
+router.post('/vehicleRegistration', async (request, response) => {
+    try {
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel, userAccountNumber,
+        } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+  
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+    
+        newApplicant.save();
+
+        return response.status(200).json({ message: 'Vehicle registered successfully' });
+    } catch (error) {
+        console.error(error.message, 'vehicle-registration');
+        // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+
+    }
+});
+
+router.post('/fastagRecharge', async (request, response) => {
+    try {
+        const { userAccountNumber, rechargeAmount } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+         
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+
+        return response.status(200).json({ message: 'Fastag recharge successful' });
+    } catch (error) {
+        console.error(error.message, 'fastag-recharge');
+        return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
+    }
+   
+});
+
+
+
+
+
 module.exports = router;
 

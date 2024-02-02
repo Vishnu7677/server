@@ -32,6 +32,9 @@
     "libphonenumber-js": "^1.10.54",
 
     "mongoose": "^8.0.3",
+
+    "node-fetch": "^3.3.2",
+ 
     "nodemailer": "^6.9.8",
 
 
@@ -42,6 +45,7 @@
 
 
     "twilio": "^4.21.0"
+
 
 
 
