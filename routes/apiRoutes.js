@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 
+const {UserDetailsAccounts,PayLaterAccount} = require('../models/userAccountDetails');
+
+
 
 
 
@@ -453,4 +456,67 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
 
 
 
+
+const addPayLater=async()=>{
+    try {
+        const payLater = new PayLaterAccount({
+            accountNumber: '50100444336091',
+            accountType: 'paylater',
+            totalCreditLimit: '50000.00',
+            utilisedLimit: '-10000.00',
+            availableLimit: '40000.00',
+            amountDue: '10000.00',
+            dueDate: '15-02-24',
+            lateFee: '0',
+            totalAdjustAmount: '0',
+            totalAmountPayable: '10000.00',
+            billPeriod: '01-01-24 to 25-01-24',
+        });
+    
+     await payLater.save();
+     mongoose.disconnect()
+    
+      } catch (e) {
+        console.log(e);
+      }
+
+}
+
+// addPayLater();
+
+router.get('/payLaterAccount',async(req,res)=>{
+    try{
+        const payLaterData = await PayLaterAccount.find()
+        return res.status(200).json({payLater:payLaterData})
+
+    }catch(e){
+        console.log(e,'paylaterapi')
+
+        return res.status(500).json({message:'Internal Server Error'})
+    }
+})
+router.put('/payLaterAccount/pay', async (req, res) => {
+    const { accountNumber } = req.body;
+  
+    try {
+      const payLaterAccount = await PayLaterAccount.findOne({ accountNumber });
+  
+      if (!payLaterAccount) {
+        return res.status(404).json({ message: 'PayLater account not found' });
+      }
+      payLaterAccount.utilisedLimit = 0;
+      payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
+      payLaterAccount.dueDate = '';
+      await payLaterAccount.save();
+  
+      return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+    } catch (e) {
+      console.log(e, 'payLaterAPI');
+  
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
+
+
 module.exports = router;
+
