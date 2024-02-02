@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
 
+const transactionSchema = new mongoose.Schema({
+  date: String,
+  description: String,
+  withdrawal: Number,
+  deposit: Number,
+  balance: Number,
+});
+
+
 const domesticLimitSchema = new mongoose.Schema({
   cashWithdrawalLimit: { type: Number, default: 0 },
   retailTransactionLimit: { type: Number, default: 0 },
@@ -43,12 +52,8 @@ const userDebitCardDetails = new mongoose.Schema({
 
 
 
-const UserDetailsAccounts = mongoose.model('UserDetailsAccounts', userDetailsAccounts);
-  userDebiitCardExpiryDate: {type: String},
-  userDebitCardStatus :{type: String, default: 'active' },
-  userDebitCardPin : userDebitCardPin,
-  reissueCard : reissueCardSchema
-})
+
+
 
 const addressSchema = new mongoose.Schema({
   communicationAddress: { type: String },
@@ -58,14 +63,14 @@ const addressSchema = new mongoose.Schema({
   village: { type: String },
 });
 
-
 const userDetailsAccounts = new mongoose.Schema({
-    userAccountNumber: {type: Number},
+     userAccountNumber: {type: Number},
     accountHolderName: {type: String},
     bankBranchName: {type: String},
     userAccountType: {type: String},
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
+
 
     userMobileNumber: {type: String},
 
@@ -74,13 +79,31 @@ const userDetailsAccounts = new mongoose.Schema({
 
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
+
+    
+    
+    firstName: { type: String },
+    lastName: { type: String },
+    address: {
+        street: { type: String },
+        city: { type: String },
+        // Add more address details if necessary
+        zipCode: { type: String }},
+
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: {type: String},
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
+
+
+
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
+
+
+
+module.exports = UserDetailsAccounts;
 
 const payLaterAccount = new mongoose.Schema({
     accountNumber: Number,
@@ -100,6 +123,8 @@ const payLaterAccount = new mongoose.Schema({
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
 module.exports = {UserDetailsAccounts,PayLaterAccount};
+
+
 
 
 
