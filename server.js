@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dbConfig = require('./utils/dbConfig')
+const path = require("path");
 
 
 
@@ -20,6 +21,9 @@ require('dotenv').config()
 mongoose.connect(dbConfig)
 .then(()=>console.log('DB Connected'))
 .catch((error)=>console.log(error));
+
+
+
 
 
 

@@ -16,4 +16,18 @@ const userDetailsAccounts = new mongoose.Schema({
 
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
+// const interestCertificateSchema = new mongoose.Schema({
+//   userAccountNumber: {type: Number},
+//   interestPeriod: { type: String, enum: ['InterestPeriod', 'InterestPeriodDate'] },
+//   startDate: { type: Date },
+//   endDate: { type: Date },
+//   interestPaid: { type: Number},  
+//   taxWithheld: { type: Number}
+ 
+// });
+
+// const InterestCertificate = mongoose.model('InterestCertificate', interestCertificateSchema);, InterestCertificate
+
+
+
 module.exports = UserDetailsAccounts;
