@@ -2,10 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dbConfig = require('./utils/dbConfig')
-
-
-
-
+const {UserDetailsAccounts} = require("./models/userAccountDetails");
 
 
 

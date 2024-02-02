@@ -1,6 +1,23 @@
 const mongoose = require('mongoose');
 
 
+const domesticLimitSchema = new mongoose.Schema({
+  cashWithdrawalLimit: { type: Number, default: 0 },
+  retailTransactionLimit: { type: Number, default: 0 },
+  ecommerceTransactionLimit: { type: Number, default: 0 },
+  contactlessPaymentLimit: { type: Number, default: 0 },
+});
+
+const internationalLimitSchema = new mongoose.Schema({
+  cashWithdrawalLimit: { type: Number, default: 0 },
+  retailTransactionLimit: { type: Number, default: 0 },
+  ecommerceTransactionLimit: { type: Number, default: 0 },
+  contactlessPaymentLimit: { type: Number, default: 0 },
+});
+
+
+
+
 const reissueCardSchema = new mongoose.Schema({
   srn: { type: String, unique: true }
 });
@@ -12,9 +29,21 @@ const userDebitCardPin  = new mongoose.Schema({
 })
 
 
+
 const userDebitCardDetails = new mongoose.Schema({
   userDebitCardNumber: { type: Number },
   userDebitCardcvv: { type: Number },
+
+  userDebitCardExpiryDate: { type: String },
+  userDebitCardStatus: { type: Boolean },
+  userDebitCardPin: userDebitCardPin,
+  domesticLimits: domesticLimitSchema,
+  internationalLimits: internationalLimitSchema,
+});
+
+
+
+const UserDetailsAccounts = mongoose.model('UserDetailsAccounts', userDetailsAccounts);
   userDebiitCardExpiryDate: {type: String},
   userDebitCardStatus :{type: String, default: 'active' },
   userDebitCardPin : userDebitCardPin,
@@ -51,6 +80,7 @@ const userDetailsAccounts = new mongoose.Schema({
     otp: {type: Number},
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
+
 
 
 module.exports = {UserDetailsAccounts};

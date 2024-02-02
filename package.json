@@ -23,7 +23,9 @@
     "nodemailer": "^6.9.8",
     "nodemon": "^3.0.2",
 
+
     "otp-generator": "^4.0.1",
+
 
     "twilio": "^4.21.0"
   }
