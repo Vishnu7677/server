@@ -1,34 +1,229 @@
 const express = require("express");
 const router = express.Router();
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const AWS = require("aws-sdk")
+const UserDetailsAccounts = require('../models/userAccountDetails');
+
+
+
+
+
+
+router.post("/generateCertificate", async (request, response) => {
+  try {
+    const {
+      accountNumber,
+      bankBranchName,
+      accountHolderName,
+      accountHolderAddress,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    } = request.body;
+
+   
+
+    const newCertificate = new InterestCertificate({
+      accountNumber,
+      accountHolderName,
+      accountHolderAddress,
+      bankBranchName,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    });
+   
+  
+    let interestPaid = 0;
+    let taxWithheld = 0;
+
+    if (interestPeriod === "Monthly") {
+      interestPaid = calculateMonthlyInterest(startDate, endDate);
+      taxWithheld = calculateMonthlyTax(interestPaid);
+    } else if (interestPeriod === "FinancialYear") {
+      interestPaid = calculateFinancialYearInterest(startDate, endDate);
+      taxWithheld = calculateFinancialYearTax(interestPaid);
+    }
+
+    newCertificate.interestPaid = interestPaid;
+    newCertificate.taxWithheld = taxWithheld;
+
+    await newCertificate.save();
+
+    const buffers = [];
+    doc.on("data", (buffer) => buffers.push(buffer));
+    doc.on("end", () => {
+      const pdfBuffer = Buffer.concat(buffers);
+
+      response.setHeader("Content-Type", "application/pdf");
+      response.setHeader(
+        "Content-Disposition",
+        'attachment; filename="interest_certificate.pdf"'
+      );
+
+      response.status(200).end(pdfBuffer);
+    });
+
+    doc.end();
+
+    console.log(`PDF generated successfully for Account ${accountNumber}`);
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    response
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+
+function calculateMonthlyInterest(startDate, endDate) {
+  
+  return 100; 
+}
+
+function calculateMonthlyTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+function calculateFinancialYearInterest(startDate, endDate) {
+ 
+  return 500; 
+}
+
+function calculateFinancialYearTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+
+
+
+
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
+
+
+router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
+router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
+
+router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
+router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
+
+
+
+
+const Applicants = require('../models/applicant');
+  
+
+
+ 
+// router.post('/send-OneTP', sendOTP);
+// router.post('/verify-OneTP', verifyOTP);
+
+// scheduled ends
+//   
+// 
+
+ 
+//
+ router.use(express.json());
+// 
+
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const sendOTP = require('../utils/sendOtp');
+
 
 const nodemailer = require('nodemailer');
+
 const UserDetailsAccounts = require('../models/userAccountDetails');
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
 
-const {UserDetailsAccounts,PayLaterAccount} = require('../models/userAccountDetails');
+const {PayLaterAccount} = require('../models/userAccountDetails');
 
 
 
 
 
-const sendOTP = require('../utils/sendOtp');
+
 const bcrypt = require('bcrypt');
 
 
 
-const {UserDetailsAccounts} = require('../models/userAccountDetails');
+
 
 
 
 router.get("/", (req, res) => {
     res.send("royal islamic bank server api routes");
+
+
 });
 
 
+router.post('/purchase', async (request, response) => {
+    try {
+
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel,
+            customerName, mobileNumber, emailId, address, pincode, city, state
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
+        if(!isAccountNumExists){
+
+        const userAccountNumber = parseInt(request.body.userAccountNumber);
+        if (/pattern/.test(userAccountNumber)) {
+            return response.status(400).json({ error: 'User account number must be 9 digits' });
+        }
+
+        let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            userDetails = new UserDetailsAccounts({
+                userAccountNumber,
+                // Add other user details here
+            });
+            await userDetails.save();
+        }
+
+        // Store the vehicle registration details
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+        await newApplicant.save();
+
+        // Assuming success, send success response
+        return response.status(200).json({ message: 'Purchase details stored successfully' });
+    } 
+  }catch (error) {
+        console.error(error.message, 'purchase-error');
+        return response.status(500).json({ error: 'Internal Server Error' });
+    }
+  
+});
+
+
+
 router.post('/accountCreation', async (request, response) => {
+
     try {
         const {
             userAccountNumber, accountHolderName, bankBranchName, userAccountType, userDateOfBirth, userEmailId,
@@ -44,6 +239,7 @@ router.post('/accountCreation', async (request, response) => {
             const hashedDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.userDebitcardpin.toString(), 10);
             const hashedConfirmDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.confirmuserDebitcardpin.toString(), 10);
 
+
             const newAccountCreation = new UserDetailsAccounts({
                 userAccountNumber: userAccountNumber,
                 accountHolderName: accountHolderName,
@@ -54,6 +250,7 @@ router.post('/accountCreation', async (request, response) => {
                 userMobileNumber: userMobileNumber,
                 accountHolderPAN: accountHolderPAN,
                 bankBranchIfscCode: bankBranchIfscCode,
+
                 accountHolderAddress: accountHolderAddress,
                 userAccountBalance: userAccountBalance,
                 userDebitCardDetails: {
@@ -66,6 +263,7 @@ router.post('/accountCreation', async (request, response) => {
                         confirmuserDebitcardpin: hashedConfirmDebitCardPin,
                     }
                 }
+
 
             });
 
@@ -183,10 +381,12 @@ router.post('/verify-otp', async (request, response)=> {
                 return response.status(400).json({ message: 'Invalid OTP' });
             }
         }
+        
         else{
             return response.status(400).json({message: 'Email not found'})
         }
     } 
+  
     catch (error) {
         console.log(error.message, 'otp verification');
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
@@ -197,7 +397,7 @@ router.post('/verify-otp', async (request, response)=> {
 
 
 
-const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+// const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -362,7 +562,7 @@ function generateUniqueSRN() {
 
 
 
-  const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+  // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -500,6 +700,112 @@ router.get('/payLaterAccount',async(req,res)=>{
 
         return res.status(500).json({message:'Internal Server Error'})
     }
+
+});
+
+router.post('/quickFundTransfer', async (req, res) => {
+    try {
+        const quickFundTransferData = req.body;
+
+    
+        if (quickFundTransferData.transferType === 'royal') {
+            
+            const isToAccountRoyal = await UserDetailsAccounts.exists({
+                userAccountNumber: quickFundTransferData.toAccountNumber,
+            });
+
+            if (!isToAccountRoyal) {
+                return res.status(400).json({ error: 'To Account Number is not a Royal Bank account' });
+            }
+        } else {
+            
+            
+    
+            const isValidToAccount = true; 
+
+            if (!isValidToAccount) {
+                return res.status(400).json({ error: 'Invalid To Account Number for other banks' });
+            }
+        }
+
+        
+        const savedData = await QuickFundTransferModel.create(quickFundTransferData);
+        return res.json(savedData);
+
+    } catch (error) {
+        console.error('Error in quickFundTransfer:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.post('/accountStatement', async (request, response) => {
+    try {
+        const { userAccountNumber, transactions } = request.body;
+
+        
+        const userAccount = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (userAccount) {
+            
+            userAccount.transactions.push(...transactions);
+
+            
+            await userAccount.save();
+
+            return response.status(200).json({ message: 'Account statement added successfully' });
+        } else {
+            return response.status(404).json({ message: 'User account not found' });
+        }
+    } catch (error) {
+        console.error(error.message, 'account-statement');
+        return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
+    }
+});
+const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+router.post('/generate-otp', async (request, response) => {
+    try {
+
+        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+        console.log(userDetails,otpMethod)
+
+        if (userDetails) {
+            const generatedOTP = generateOTP();
+            userDetails.otp = generatedOTP;
+            await userDetails.save();
+ 
+            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
+
+            return response.status(200).json({ message: 'OTP sent successfully' });
+        } else {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+    } catch (error) {
+        console.log(error.message, 'generate PIN and send OTP');
+        return response.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+router.post('/validate-otp', async (req, res) => {
+    try {
+        const { accountNumber, otp } = req.body;
+
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+
+        if (userDetails && Number(userDetails.otp) === Number(otp)) {
+            userDetails.otp = null;
+            await userDetails.save();
+            return res.status(200).json({ message: 'OTP validated successfully' });
+        } else {
+            console.log('Invalid OTP');
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+    } catch (error) {
+        console.error('Error validating OTP:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 })
 router.put('/payLaterAccount/pay', async (req, res) => {
     const { accountNumber } = req.body;
@@ -670,6 +976,7 @@ router.post('/rdformdetails', async (request, response)=> {
         }
         else{
             return response.status(400).json({message: 'RD is already exists in bank'})
+
         }
     } 
     catch (error) {
@@ -704,6 +1011,104 @@ router.post('/rdformdetails', async (request, response)=> {
         }
     }
 });
+
+
+router.get('/userDetails/:accountNumber', async (request, response)=> {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const userDetails = await UserDetailsAccounts.findOne({userAccountNumber: accountNumber});
+        
+        if (userDetails) {
+            return response.status(200).json({ details: userDetails,});
+          
+        } 
+        else if (selectedUser && selectedUser.accountHolderPAN !== accountHolderPAN) {
+          return response.status(400).json({ message: 'PAN number does not match with the account holder'});
+         
+        }
+       
+        else {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+
+    } 
+    catch (error) {
+        console.log(error.message, 'account details');
+        return response.status(500).json({message: 'Internal Server'});
+
+        
+    }
+})
+
+
+
+
+
+
+
+
+ 
+router.post('/submitForm', inwardController.submitForm);
+ 
+   
+
+
+
+router.post('/vehicleRegistration', async (request, response) => {
+    try {
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel, userAccountNumber,
+        } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+  
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+    
+        newApplicant.save();
+
+        return response.status(200).json({ message: 'Vehicle registered successfully' });
+    } catch (error) {
+        console.error(error.message, 'vehicle-registration');
+        // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+
+    }
+});
+
+router.post('/fastagRecharge', async (request, response) => {
+    try {
+        const { userAccountNumber, rechargeAmount } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+         
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+
+        return response.status(200).json({ message: 'Fastag recharge successful' });
+    } catch (error) {
+        console.error(error.message, 'fastag-recharge');
+        return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
+    }
+   
+});
+
 
 
 
