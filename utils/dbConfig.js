@@ -15,6 +15,4 @@ else if (mode === "local") {
 }
 
 
-
-
 module.exports = mongo_uri;
