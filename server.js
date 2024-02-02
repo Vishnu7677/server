@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dbConfig = require('./utils/dbConfig')
 
+const {UserDetailsAccounts} = require("./models/userAccountDetails");
+
+
+
 
 const app = express();
 const port = 4444 || process.env.PORT
