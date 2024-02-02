@@ -1,11 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
+
+const path = require("path");
+
 const dbConfig = require('./utils/dbConfig');
 // sairam inwardremitance code starts
 const apiRoutes = require('./routes/apiRoutes')
 // sairam inwardremitance code ends
 const dotenv = require('dotenv');
+
 
 
 // 
@@ -60,6 +65,9 @@ mongoose.connect(dbConfig, {
 
 app.post('/api/send', sendOTP);
 app.post('/api/verify', verifyOTP);
+
+
+
 
 app.use("/auth", require("./routes/authRoutes")); 
 app.use("/api", (require("./routes/apiRoutes")));
