@@ -53,7 +53,9 @@ const sendEmailOtp = (email, otp) => {
 const sendCallOtp = (mobileNumber, otp) => {
     client.calls
         .create({
+
             twiml: `<Response><Say>Your OTP is ${otp}</Say></Response>`,
+
             to: mobileNumber,
             from: twilioPhoneNumber,
         })
@@ -72,6 +74,7 @@ const sendOTP = (otpMethod, mobileNumber, email, otp) => {
         console.error('Invalid OTP method:', otpMethod);
     }
 };
+
 
 
 module.exports = sendOTP;

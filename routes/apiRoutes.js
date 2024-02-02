@@ -1,25 +1,229 @@
 const express = require("express");
 const router = express.Router();
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const AWS = require("aws-sdk")
+const UserDetailsAccounts = require('../models/userAccountDetails');
 
 
 
 
 
+
+router.post("/generateCertificate", async (request, response) => {
+  try {
+    const {
+      accountNumber,
+      bankBranchName,
+      accountHolderName,
+      accountHolderAddress,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    } = request.body;
+
+   
+
+    const newCertificate = new InterestCertificate({
+      accountNumber,
+      accountHolderName,
+      accountHolderAddress,
+      bankBranchName,
+      userAccountType,
+      interestPeriod,
+      startDate,
+      endDate,
+      
+    });
+   
+  
+    let interestPaid = 0;
+    let taxWithheld = 0;
+
+    if (interestPeriod === "Monthly") {
+      interestPaid = calculateMonthlyInterest(startDate, endDate);
+      taxWithheld = calculateMonthlyTax(interestPaid);
+    } else if (interestPeriod === "FinancialYear") {
+      interestPaid = calculateFinancialYearInterest(startDate, endDate);
+      taxWithheld = calculateFinancialYearTax(interestPaid);
+    }
+
+    newCertificate.interestPaid = interestPaid;
+    newCertificate.taxWithheld = taxWithheld;
+
+    await newCertificate.save();
+
+    const buffers = [];
+    doc.on("data", (buffer) => buffers.push(buffer));
+    doc.on("end", () => {
+      const pdfBuffer = Buffer.concat(buffers);
+
+      response.setHeader("Content-Type", "application/pdf");
+      response.setHeader(
+        "Content-Disposition",
+        'attachment; filename="interest_certificate.pdf"'
+      );
+
+      response.status(200).end(pdfBuffer);
+    });
+
+    doc.end();
+
+    console.log(`PDF generated successfully for Account ${accountNumber}`);
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    response
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+
+function calculateMonthlyInterest(startDate, endDate) {
+  
+  return 100; 
+}
+
+function calculateMonthlyTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+function calculateFinancialYearInterest(startDate, endDate) {
+ 
+  return 500; 
+}
+
+function calculateFinancialYearTax(interestPaid) {
+  
+  return interestPaid * 0.1; 
+}
+
+
+
+
+
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
+
+
+router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
+router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
+
+router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
+router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
+
+
+
+
+const Applicants = require('../models/applicant');
+  
+
+
+ 
+// router.post('/send-OneTP', sendOTP);
+// router.post('/verify-OneTP', verifyOTP);
+
+// scheduled ends
+//   
+// 
+
+ 
+//
+ router.use(express.json());
+// 
+
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
+
+
+const nodemailer = require('nodemailer');
+
+const UserDetailsAccounts = require('../models/userAccountDetails');
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
+
+
+
+
+const {PayLaterAccount} = require('../models/userAccountDetails');
+
+
+
+
+
+
 const bcrypt = require('bcrypt');
 
 
 
-const {UserDetailsAccounts} = require('../models/userAccountDetails');
+
 
 
 
 router.get("/", (req, res) => {
     res.send("royal islamic bank server api routes");
+
+
 });
 
 
+router.post('/purchase', async (request, response) => {
+    try {
+
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel,
+            customerName, mobileNumber, emailId, address, pincode, city, state
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
+        if(!isAccountNumExists){
+
+        const userAccountNumber = parseInt(request.body.userAccountNumber);
+        if (/pattern/.test(userAccountNumber)) {
+            return response.status(400).json({ error: 'User account number must be 9 digits' });
+        }
+
+        let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            userDetails = new UserDetailsAccounts({
+                userAccountNumber,
+                // Add other user details here
+            });
+            await userDetails.save();
+        }
+
+        // Store the vehicle registration details
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+        await newApplicant.save();
+
+        // Assuming success, send success response
+        return response.status(200).json({ message: 'Purchase details stored successfully' });
+    } 
+  }catch (error) {
+        console.error(error.message, 'purchase-error');
+        return response.status(500).json({ error: 'Internal Server Error' });
+    }
+  
+});
+
+
+
 router.post('/accountCreation', async (request, response) => {
+
     try {
         const {
             userAccountNumber, accountHolderName, bankBranchName, userAccountType, userDateOfBirth, userEmailId,
@@ -35,6 +239,7 @@ router.post('/accountCreation', async (request, response) => {
             const hashedDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.userDebitcardpin.toString(), 10);
             const hashedConfirmDebitCardPin = await bcrypt.hash(userDebitCardDetails.userDebitCardPin.confirmuserDebitcardpin.toString(), 10);
 
+
             const newAccountCreation = new UserDetailsAccounts({
                 userAccountNumber: userAccountNumber,
                 accountHolderName: accountHolderName,
@@ -45,6 +250,7 @@ router.post('/accountCreation', async (request, response) => {
                 userMobileNumber: userMobileNumber,
                 accountHolderPAN: accountHolderPAN,
                 bankBranchIfscCode: bankBranchIfscCode,
+
                 accountHolderAddress: accountHolderAddress,
                 userAccountBalance: userAccountBalance,
                 userDebitCardDetails: {
@@ -57,6 +263,7 @@ router.post('/accountCreation', async (request, response) => {
                         confirmuserDebitcardpin: hashedConfirmDebitCardPin,
                     }
                 }
+
 
             });
 
@@ -174,10 +381,12 @@ router.post('/verify-otp', async (request, response)=> {
                 return response.status(400).json({ message: 'Invalid OTP' });
             }
         }
+        
         else{
             return response.status(400).json({message: 'Email not found'})
         }
     } 
+  
     catch (error) {
         console.log(error.message, 'otp verification');
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
@@ -188,7 +397,7 @@ router.post('/verify-otp', async (request, response)=> {
 
 
 
-const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+// const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -353,7 +562,7 @@ function generateUniqueSRN() {
 
 
 
-  const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+  // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
 
 router.post('/generate-otp', async (request, response) => {
@@ -453,4 +662,456 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
 
 
 
+
+const addPayLater=async()=>{
+    try {
+        const payLater = new PayLaterAccount({
+            accountNumber: '50100444336091',
+            accountType: 'paylater',
+            totalCreditLimit: '50000.00',
+            utilisedLimit: '-10000.00',
+            availableLimit: '40000.00',
+            amountDue: '10000.00',
+            dueDate: '15-02-24',
+            lateFee: '0',
+            totalAdjustAmount: '0',
+            totalAmountPayable: '10000.00',
+            billPeriod: '01-01-24 to 25-01-24',
+        });
+    
+     await payLater.save();
+     mongoose.disconnect()
+    
+      } catch (e) {
+        console.log(e);
+      }
+
+}
+
+// addPayLater();
+
+router.get('/payLaterAccount',async(req,res)=>{
+    try{
+        const payLaterData = await PayLaterAccount.find()
+        return res.status(200).json({payLater:payLaterData})
+
+    }catch(e){
+        console.log(e,'paylaterapi')
+
+        return res.status(500).json({message:'Internal Server Error'})
+    }
+
+});
+
+router.post('/quickFundTransfer', async (req, res) => {
+    try {
+        const quickFundTransferData = req.body;
+
+    
+        if (quickFundTransferData.transferType === 'royal') {
+            
+            const isToAccountRoyal = await UserDetailsAccounts.exists({
+                userAccountNumber: quickFundTransferData.toAccountNumber,
+            });
+
+            if (!isToAccountRoyal) {
+                return res.status(400).json({ error: 'To Account Number is not a Royal Bank account' });
+            }
+        } else {
+            
+            
+    
+            const isValidToAccount = true; 
+
+            if (!isValidToAccount) {
+                return res.status(400).json({ error: 'Invalid To Account Number for other banks' });
+            }
+        }
+
+        
+        const savedData = await QuickFundTransferModel.create(quickFundTransferData);
+        return res.json(savedData);
+
+    } catch (error) {
+        console.error('Error in quickFundTransfer:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.post('/accountStatement', async (request, response) => {
+    try {
+        const { userAccountNumber, transactions } = request.body;
+
+        
+        const userAccount = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (userAccount) {
+            
+            userAccount.transactions.push(...transactions);
+
+            
+            await userAccount.save();
+
+            return response.status(200).json({ message: 'Account statement added successfully' });
+        } else {
+            return response.status(404).json({ message: 'User account not found' });
+        }
+    } catch (error) {
+        console.error(error.message, 'account-statement');
+        return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
+    }
+});
+const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+router.post('/generate-otp', async (request, response) => {
+    try {
+
+        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+        console.log(userDetails,otpMethod)
+
+        if (userDetails) {
+            const generatedOTP = generateOTP();
+            userDetails.otp = generatedOTP;
+            await userDetails.save();
+ 
+            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
+
+            return response.status(200).json({ message: 'OTP sent successfully' });
+        } else {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+    } catch (error) {
+        console.log(error.message, 'generate PIN and send OTP');
+        return response.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+router.post('/validate-otp', async (req, res) => {
+    try {
+        const { accountNumber, otp } = req.body;
+
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+
+        if (userDetails && Number(userDetails.otp) === Number(otp)) {
+            userDetails.otp = null;
+            await userDetails.save();
+            return res.status(200).json({ message: 'OTP validated successfully' });
+        } else {
+            console.log('Invalid OTP');
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+    } catch (error) {
+        console.error('Error validating OTP:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+})
+router.put('/payLaterAccount/pay', async (req, res) => {
+    const { accountNumber } = req.body;
+  
+    try {
+      const payLaterAccount = await PayLaterAccount.findOne({ accountNumber });
+  
+      if (!payLaterAccount) {
+        return res.status(404).json({ message: 'PayLater account not found' });
+      }
+      payLaterAccount.utilisedLimit = 0;
+      payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
+      payLaterAccount.dueDate = '';
+      await payLaterAccount.save();
+  
+      return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+    } catch (e) {
+      console.log(e, 'payLaterAPI');
+  
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
+
+
+
+router.post('/fdformdetails', async (request, response)=> {
+    try {
+        const {
+            FixeddepositAccountNumber, FixeddepositTitle, FixeddepositFirstname, FixeddepositMiddlename, FixeddepositSurname, FixeddepositDateOfBirth,
+            FixeddepositMobileNumber, FixeddepositEmailId, FixeddepositLine1, FixeddepositLine2, FixeddepositTown, FixeddepositCountry, FixeddepositPostcode, FixeddepositAmount, FixeddepositTermyears,
+            FixeddepositTermmonths, FixeddepositTermdays, FixeddepositInterestrate, FixeddepositInterestpay, FixeddepositBankname, NomineeTitle, NomineeFirstname, NomineeMiddlename, NomineeSurname, NomineeDateOfBirth, NomineeMobileNumber,
+            NomineeEmailId, NomineeLine1, NomineeLine2, NomineeTown, NomineeCountry, NomineePostcode
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({ FixeddepositAccountNumber: FixeddepositAccountNumber });
+        if (!isAccountNumExists) {
+            const newAccountCreation = new UserDetailsFixeddeposit({
+                FixeddepositAccountNumber: FixeddepositAccountNumber,
+                FixeddepositTitle: FixeddepositTitle,
+                FixeddepositFirstname: FixeddepositFirstname,
+                FixeddepositMiddlename: FixeddepositMiddlename,
+                FixeddepositSurname: FixeddepositSurname,
+                FixeddepositDateOfBirth: FixeddepositDateOfBirth,
+                FixeddepositMobileNumber: FixeddepositMobileNumber,
+                FixeddepositEmailId: FixeddepositEmailId,
+                FixeddepositLine1: FixeddepositLine1,
+                FixeddepositLine2: FixeddepositLine2,
+                FixeddepositTown: FixeddepositTown,
+                FixeddepositCountry: FixeddepositCountry,
+                FixeddepositPostcode: FixeddepositPostcode,
+                FixeddepositAmount: FixeddepositAmount,
+                FixeddepositTermyears: FixeddepositTermyears,
+                FixeddepositTermmonths: FixeddepositTermmonths,
+                FixeddepositTermdays: FixeddepositTermdays,
+                FixeddepositInterestrate: FixeddepositInterestrate,
+                FixeddepositInterestpay: FixeddepositInterestpay,
+                FixeddepositBankname: FixeddepositBankname,
+                NomineeTitle: NomineeTitle,
+                NomineeFirstname: NomineeFirstname,
+                NomineeMiddlename: NomineeMiddlename,
+                NomineeSurname: NomineeSurname,
+                NomineeDateOfBirth: NomineeDateOfBirth,
+                NomineeMobileNumber: NomineeMobileNumber,
+                NomineeEmailId: NomineeEmailId,
+                NomineeLine1: NomineeLine1,
+                NomineeLine2: NomineeLine2,
+                NomineeTown: NomineeTown,
+                NomineeCountry: NomineeCountry,
+                NomineePostcode: NomineePostcode,
+            });
+            newAccountCreation.save();
+            
+            // Send email notification
+            const email = FixeddepositEmailId;
+            await sendEmailNotification(email);
+            
+            return response.status(200).json({ message: 'FD created successfully' });
+        } else {
+            return response.status(400).json({ message: 'FD is already exists in bank' });
+        }
+    } catch (error) {
+        console.log(error.message, 'account-creation');
+        return response.status(500).json({ message: 'Internal Server Error at User FD Creation' });
+    }
+
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Fixed Deposit Created',
+                text: 'Your fixed deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
+    }
+});
+
+
+
+
+router.post('/rdformdetails', async (request, response)=> {
+    try {
+        const { 
+            RecurringdepositAccountNumber, RecurringdepositTitle, RecurringdepositFirstname, RecurringdepositMiddlename, RecurringdepositSurname, RecurringdepositDateOfBirth,
+            RecurringdepositMobileNumber, RecurringdepositEmailId, RecurringdepositLine1, RecurringdepositLine2, RecurringdepositTown,RecurringdepositCountry,RecurringdepositPostcode,RecurringdepositAmount,RecurringdepositTermyears
+            ,RecurringdepositTermmonths,RecurringdepositTermdays,RecurringdepositInterestrate,RecurringdepositInterestpay,RecurringdepositBankname,RecurringNomineeTitle,RecurringNomineeFirstname,RecurringNomineeMiddlename,RecurringNomineeSurname,RecurringNomineeDateOfBirth,RecurringNomineeMobileNumber
+            ,RecurringNomineeEmailId,RecurringNomineeLine1,RecurringNomineeLine2,RecurringNomineeTown,RecurringNomineeCountry,RecurringNomineePostcode
+        } = request.body;
+
+        const isAccountNumExists = await UserDetailsFixeddeposit.findOne({RecurringdepositAccountNumber: RecurringdepositAccountNumber});
+        if(!isAccountNumExists){
+            const newAccountCreation = new UserDetailsFixeddeposit({
+                RecurringdepositAccountNumber: RecurringdepositAccountNumber,
+                RecurringdepositTitle: RecurringdepositTitle,
+                RecurringdepositFirstname: RecurringdepositFirstname,
+                RecurringdepositMiddlename: RecurringdepositMiddlename,
+                RecurringdepositSurname: RecurringdepositSurname,
+                RecurringdepositDateOfBirth: RecurringdepositDateOfBirth,
+                RecurringdepositMobileNumber: RecurringdepositMobileNumber,
+                RecurringdepositEmailId: RecurringdepositEmailId,
+                RecurringdepositLine1: RecurringdepositLine1,
+                RecurringdepositLine2: RecurringdepositLine2,
+                RecurringdepositTown: RecurringdepositTown,
+                RecurringdepositCountry: RecurringdepositCountry,
+                RecurringdepositPostcode: RecurringdepositPostcode,
+                RecurringdepositAmount: RecurringdepositAmount,
+                RecurringdepositTermyears: RecurringdepositTermyears,
+                RecurringdepositTermmonths: RecurringdepositTermmonths,
+                RecurringdepositTermdays: RecurringdepositTermdays,
+                RecurringdepositInterestrate: RecurringdepositInterestrate,
+                RecurringdepositInterestpay: RecurringdepositInterestpay,
+                RecurringdepositBankname: RecurringdepositBankname,
+                RecurringNomineeTitle:RecurringNomineeTitle,
+                RecurringNomineeFirstname: RecurringNomineeFirstname,
+                RecurringNomineeMiddlename: RecurringNomineeMiddlename,
+                RecurringNomineeSurname: RecurringNomineeSurname,
+                RecurringNomineeDateOfBirth: RecurringNomineeDateOfBirth,
+                RecurringNomineeMobileNumber: RecurringNomineeMobileNumber,
+                RecurringNomineeEmailId: RecurringNomineeEmailId,
+                RecurringNomineeLine1: RecurringNomineeLine1,
+                RecurringNomineeLine2: RecurringNomineeLine2,
+                RecurringNomineeTown: RecurringNomineeTown,
+                RecurringNomineeCountry: RecurringNomineeCountry,
+                RecurringNomineePostcode:RecurringNomineePostcode,
+                
+            });
+            newAccountCreation.save();
+            const email = RecurringdepositEmailId;
+            await sendEmailNotification(email);
+            return response.status(200).json({message: 'RD created successfully'})
+        }
+        else{
+            return response.status(400).json({message: 'RD is already exists in bank'})
+
+        }
+    } 
+    catch (error) {
+        console.log(error.message, 'account-creation');
+        return response.status(500).json({message: 'Internal Server Error at User RD Creation'});
+    }
+    async function sendEmailNotification(email) {
+        try {
+            // Create a nodemailer transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'royalislamicbank@gmail.com', // replace with your email
+                    pass: 'yqlo ffyv qsic jrqs' // replace with your email password
+                }
+            });
+    
+            // Setup email data
+            const mailOptions = {
+                from: 'royalislamicbank@gmail.com',
+                to: email,
+                subject: 'Recurring Deposit Created',
+                text: 'Your Recurring deposit has been created successfully.'
+            };
+    
+            // Send the email
+            await transporter.sendMail(mailOptions);
+    
+            console.log('Email notification sent successfully');
+        } catch (error) {
+            console.error('Error sending email notification:', error.message);
+        }
+    }
+});
+
+
+router.get('/userDetails/:accountNumber', async (request, response)=> {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const userDetails = await UserDetailsAccounts.findOne({userAccountNumber: accountNumber});
+        
+        if (userDetails) {
+            return response.status(200).json({ details: userDetails,});
+          
+        } 
+        else if (selectedUser && selectedUser.accountHolderPAN !== accountHolderPAN) {
+          return response.status(400).json({ message: 'PAN number does not match with the account holder'});
+         
+        }
+       
+        else {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+
+    } 
+    catch (error) {
+        console.log(error.message, 'account details');
+        return response.status(500).json({message: 'Internal Server'});
+
+        
+    }
+})
+
+
+
+
+
+
+
+
+ 
+router.post('/submitForm', inwardController.submitForm);
+ 
+   
+
+
+
+router.post('/vehicleRegistration', async (request, response) => {
+    try {
+        const {
+            vehicleRegNum, vehicleMake, vehicleModel, userAccountNumber,
+        } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+            
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+  
+        const newApplicant = new Applicants({
+            vehicleRegNum,
+            vehicleMake,
+            vehicleModel,
+            customerDetails: userDetails._id,
+        });
+
+    
+        newApplicant.save();
+
+        return response.status(200).json({ message: 'Vehicle registered successfully' });
+    } catch (error) {
+        console.error(error.message, 'vehicle-registration');
+        // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
+        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+
+    }
+});
+
+router.post('/fastagRecharge', async (request, response) => {
+    try {
+        const { userAccountNumber, rechargeAmount } = request.body;
+
+        
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!userDetails) {
+         
+            return response.status(404).json({ error: 'User not found with the provided account number' });
+        }
+
+
+        return response.status(200).json({ message: 'Fastag recharge successful' });
+    } catch (error) {
+        console.error(error.message, 'fastag-recharge');
+        return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
+    }
+   
+});
+
+
+
+
+
 module.exports = router;
+
