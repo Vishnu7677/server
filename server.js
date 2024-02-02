@@ -2,7 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dbConfig = require('./utils/dbConfig')
+
 const {UserDetailsAccounts} = require("./models/userAccountDetails");
+
 
 
 
@@ -22,5 +24,6 @@ mongoose.connect(dbConfig)
 
 app.use("/auth", require("./routes/authRoutes")); 
 app.use("/api", (require("./routes/apiRoutes")));
+app.use("/form60Userdetails", require("./routes/form60routes")); 
 
 app.listen(port, ()=>console.log(`Server Running at ${port}`));
