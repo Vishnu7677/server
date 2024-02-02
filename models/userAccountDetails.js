@@ -8,12 +8,12 @@ const userDetailsAccounts = new mongoose.Schema({
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
     userMobileNumber: {type: Number},
+    otpCode: {type: String},
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
     accountHolderAddress: {type: String},
     userAccountBalance: {type: String}
 });
-
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
-module.exports = UserDetailsAccounts;
+module.exports = {UserDetailsAccounts};
