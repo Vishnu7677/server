@@ -37,7 +37,12 @@ const userDetailsAccounts = new mongoose.Schema({
     userAccountType: {type: String},
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
+
     userMobileNumber: {type: String},
+
+    
+    otpCode: {type: String},
+
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
     accountHolderAddress: { type: addressSchema, default: {} },
@@ -45,8 +50,8 @@ const userDetailsAccounts = new mongoose.Schema({
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
 });
-
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
 
-module.exports = UserDetailsAccounts;
+module.exports = {UserDetailsAccounts};
+
