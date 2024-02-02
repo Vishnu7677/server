@@ -1,6 +1,37 @@
 const express = require("express");
 const router = express.Router();
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
 
+
+router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
+router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
+
+router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
+router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
+
+
+
+const Applicants = require('../models/applicant');
+  
+// const { sendOTP, verifyOTP } = require('../controllers/otpController');
+
+ 
+router.post('/send-OneTP', sendOTP);
+router.post('/verify-OneTP', verifyOTP);
+
+// scheduled ends
+//   
+// 
+const UserDetailsAccounts = require('../models/userAccountDetails');
+ 
+//
+ router.use(express.json());
+// 
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+=======
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
 
@@ -30,6 +61,7 @@ const {UserDetailsAccounts} = require('../models/userAccountDetails');
 
 router.get("/", (req, res) => {
     res.send("royal islamic bank server api routes");
+
 
 });
 
@@ -822,6 +854,13 @@ router.post('/rdformdetails', async (request, response)=> {
 
 
 
-module.exports = router;
 
+
+
+
+ 
+router.post('/submitForm', inwardController.submitForm);
+ 
+   
+module.exports = router;
 

@@ -89,6 +89,7 @@ const userDetailsAccounts = new mongoose.Schema({
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
 
+
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
@@ -112,6 +113,7 @@ const payLaterAccount = new mongoose.Schema({
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
 module.exports = {UserDetailsAccounts,PayLaterAccount};
+
 
 
 
