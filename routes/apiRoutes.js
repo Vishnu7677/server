@@ -117,7 +117,7 @@ router.post('/otp-send', async (req,res)=> {
             let info = await transporter.sendMail(mailOptions);
       
             res.status(200).json(responseType);
-        } 
+        }
         catch (error) {
           console.error(error);
           res.status(500).json({
