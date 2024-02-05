@@ -64,19 +64,14 @@ const addressSchema = new mongoose.Schema({
 });
 
 const userDetailsAccounts = new mongoose.Schema({
-     userAccountNumber: {type: Number},
+    userAccountNumber: {type: Number},
     accountHolderName: {type: String},
     bankBranchName: {type: String},
     userAccountType: {type: String},
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
-
-
     userMobileNumber: {type: String},
-
-    
     otpCode: {type: String},
-
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
 
@@ -90,7 +85,7 @@ const userDetailsAccounts = new mongoose.Schema({
         // Add more address details if necessary
         zipCode: { type: String }},
 
-    accountHolderAddress: { type: addressSchema, default: {} },
+    accountHolderAddress: addressSchema,
     userAccountBalance: {type: String},
     userDebitCardDetails: userDebitCardDetails,
     otp: {type: Number},
@@ -103,7 +98,6 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 
 
 
-module.exports = UserDetailsAccounts;
 
 const payLaterAccount = new mongoose.Schema({
     accountNumber: Number,
