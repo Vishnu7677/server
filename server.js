@@ -59,7 +59,7 @@ mongoose.connect(dbConfig, {
   const inwardRemittanceRoutes = require('./routes/apiRoutes');
   app.use('/api', inwardRemittanceRoutes);
 
-  app.use('/api', apiRoutes);
+  // app.use('/api', apiRoutes);
 // inward remittance sched ends 
 // 
 
@@ -70,7 +70,8 @@ app.post('/api/verify', verifyOTP);
 
 
 app.use("/auth", require("./routes/authRoutes")); 
-app.use("/api", (require("./routes/apiRoutes")));
+app.use("/api", require("./routes/apiRoutes"));
+
 app.use("/form60Userdetails", require("./routes/form60routes")); 
 
 app.listen(port, ()=>console.log(`Server Running at ${port}`));         

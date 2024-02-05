@@ -3,7 +3,7 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
-const UserDetailsAccounts = require('../models/userAccountDetails');
+const {UserDetailsAccounts} = require('../models/userAccountDetails');
 
 
 
@@ -145,7 +145,6 @@ const sendOTP = require('../utils/sendOtp');
 
 const nodemailer = require('nodemailer');
 
-const UserDetailsAccounts = require('../models/userAccountDetails');
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
@@ -168,8 +167,6 @@ const bcrypt = require('bcrypt');
 
 router.get("/", (req, res) => {
     res.send("royal islamic bank server api routes");
-
-
 });
 
 
@@ -222,7 +219,7 @@ router.post('/purchase', async (request, response) => {
 
 
 
-router.post('/accountCreation', async (request, response) => {
+router.post('/customerAccountCreation', async (request, response) => {
 
     try {
         const {
@@ -278,10 +275,10 @@ router.post('/accountCreation', async (request, response) => {
     }
 });
 
-
 router.get('/userDetails/:accountNumber', async (request, response) => {
     try {
         const accountNumber = request.params.accountNumber;
+        console.log(accountNumber);
         const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
         if (userDetails) {
             return response.status(200).json({ details: userDetails });
@@ -298,14 +295,15 @@ router.get('/userDetails/:accountNumber', async (request, response) => {
     }
 });
 
-router.post('/otp-send', async (req,res)=> {
+router.post('/otpsend', async (req,res)=> {
     try {
       
         let otpcode = Math.floor(100000 + Math.random() * 900000);
+        const email = req.body.email
       
         const responseType = {};
     
-        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
+        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: email });
       
         if (existingOtp) {
             existingOtp.otpCode = otpcode;
@@ -314,8 +312,8 @@ router.post('/otp-send', async (req,res)=> {
         else {
             // Create new OTP
             let otpData = new UserDetailsAccounts({
-                userEmailId: req.body.email,
-                code: otpcode,
+                userEmailId: email,
+                otpCode: otpcode,
             });
             await otpData.save();
         }
@@ -336,10 +334,10 @@ router.post('/otp-send', async (req,res)=> {
             }
         });
       
-        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
+        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: email });
         let mailOptions = {
             from: 'giribabu8719@gmail.com',
-            to: req.body.email,
+            to: email,
             subject: 'Royal Islamic Bank User Authentication',
             html:
              `  <div>
