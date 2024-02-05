@@ -1,17 +1,17 @@
 const twilio = require('twilio');
-const  UserOTP = require('../models/otp');
+const  TaxcenterOTP = require('../models/otp');
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = new twilio(accountSid, authToken);
 
-const sendOTP = async (req, res) => {
+const TaxsendOTP = async (req, res) => {
   try {
     const { mobileNumber } = req.body;
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await UserOTP.findOneAndUpdate(
+    await TaxcenterOTP.findOneAndUpdate(
       { mobileNumber },
       { otp },
       { new: true, upsert: true }
@@ -30,11 +30,11 @@ const sendOTP = async (req, res) => {
   }
 };
 
-const verifyOTP = async (req, res) => {
+const TaxverifyOTP = async (req, res) => {
   try {
     const { mobileNumber, otp } = req.body;
  
-    const user = await UserOTP.findOne({ mobileNumber });
+    const user = await TaxcenterOTP.findOne({ mobileNumber });
 
     if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -55,7 +55,7 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-module.exports = { sendOTP, verifyOTP };
+module.exports = { TaxsendOTP, TaxverifyOTP };
 
 
 

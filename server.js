@@ -18,7 +18,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
   
 // 
-const { sendOTP, verifyOTP } = require('./controllers/otpController');
+const {TaxsendOTP, TaxverifyOTP } = require('./controllers/otpController');
 
 // app.use('/api/auth', authRoutes);
  
@@ -63,8 +63,8 @@ mongoose.connect(dbConfig, {
 // inward remittance sched ends 
 // 
 
-app.post('/api/send', sendOTP);
-app.post('/api/verify', verifyOTP);
+app.post('/api/send-OneTP', TaxsendOTP);
+app.post('/api/verify-OneTP', TaxverifyOTP);
 
 
 

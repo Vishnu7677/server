@@ -120,12 +120,13 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 const Applicants = require('../models/applicant');
+const { TaxverifyOTP, TaxsendOTP } = require("../controllers/otpController");
   
 
 
  
-// router.post('/send-OneTP', sendOTP);
-// router.post('/verify-OneTP', verifyOTP);
+router.post('/send-OneTP', TaxsendOTP);
+router.post('/verify-OneTP', TaxverifyOTP);
 
 // scheduled ends
 //   
