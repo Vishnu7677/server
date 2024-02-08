@@ -3,7 +3,8 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
-const {UserDetailsAccounts} = require('../models/userAccountDetails');
+const { UserDetailsAccounts, CustomerCreditCardDetails } = require('../models/userAccountDetails');
+// const CustomerCreditCardDetails = require('../models/CustomerCreditCardDetails');
 
 
 
@@ -278,7 +279,6 @@ router.post('/customerAccountCreation', async (request, response) => {
 router.get('/userDetails/:accountNumber', async (request, response) => {
     try {
         const accountNumber = request.params.accountNumber;
-        console.log(accountNumber);
         const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
         if (userDetails) {
             return response.status(200).json({ details: userDetails });
@@ -289,9 +289,7 @@ router.get('/userDetails/:accountNumber', async (request, response) => {
     }
     catch (error) {
         console.log(error.message, 'account details');
-
         return response.status(500).json({message: 'Internal Server Error at Account Details API'})
-
     }
 });
 
@@ -390,6 +388,12 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
+
+
+
+
+
+
 
 
 
