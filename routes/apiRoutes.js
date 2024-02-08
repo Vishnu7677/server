@@ -549,12 +549,13 @@ router.get('/payLaterAccount',async(req,res)=>{
 
 });
 
-
 router.post('/quickFundTransfer', async (req, res) => {
     try {
         const quickFundTransferData = req.body;
 
+    
         if (quickFundTransferData.transferType === 'royal') {
+            
             const isToAccountRoyal = await UserDetailsAccounts.exists({
                 userAccountNumber: quickFundTransferData.toAccountNumber,
             });
@@ -563,36 +564,20 @@ router.post('/quickFundTransfer', async (req, res) => {
                 return res.status(400).json({ error: 'To Account Number is not a Royal Bank account' });
             }
         } else {
-            const isValidToAccount = true;
+            
+            
+    
+            const isValidToAccount = true; 
 
             if (!isValidToAccount) {
                 return res.status(400).json({ error: 'Invalid To Account Number for other banks' });
             }
         }
 
-        // Save transaction data
+        
         const savedData = await QuickFundTransferModel.create(quickFundTransferData);
-
-        // Validate that amount is a valid numeric value
-        const isValidAmount = !isNaN(quickFundTransferData.amount);
-
-        if (!isValidAmount) {
-            return res.status(400).json({ error: 'Invalid amount' });
-        }
-
-        // Deduct the amount from the source account
-        await UserDetailsAccounts.updateOne(
-            { userAccountNumber: quickFundTransferData.transferForm },
-            { $inc: { userAccountBalance: -parseInt(quickFundTransferData.amount) } }
-        );
-
-        // Credit the amount to the destination account
-        await UserDetailsAccounts.updateOne(
-            { userAccountNumber: quickFundTransferData.toAccountNumber },
-            { $inc: { userAccountBalance: parseInt(quickFundTransferData.amount) } }
-        );
-
         return res.json(savedData);
+
     } catch (error) {
         console.error('Error in quickFundTransfer:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
