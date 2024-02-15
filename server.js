@@ -45,11 +45,7 @@ require('dotenv').config()
 app.use(bodyParser.urlencoded({ extended: false }));
 // scheduled ends
 
-mongoose.connect(dbConfig, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true ,
-    
-  })
+mongoose.connect(dbConfig)
 .then(()=>console.log('DB Connected'))
 .catch((error)=>console.log(error));
 

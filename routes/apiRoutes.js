@@ -4,6 +4,7 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
+const { sendEmail } = require("../emailServiecs");
 
 
 
@@ -1106,6 +1107,194 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
+
+
+// Block Credit Card APIS starts
+const BlockCreditCard = require("../models/blockcreditCroutes");
+
+router.post('/blockcreditcard', async (req, res) => {
+    const { creditCardNumber } = req.body;
+  
+    // Check if credit card number already exists
+    const existingCreditCard = await BlockCreditCard.findOne({ creditCardNumber });
+    if (existingCreditCard) {
+        existingCreditCard.isActive = false; // Mark the existing credit card as inactive
+        await existingCreditCard.save();
+        return res.status(201).json({ message: 'Credit card number already exists and has been blocked' });
+    }
+  
+    try {
+      const { cardHolderName, ExpiryDate, CVVNumber, reason,  email  } = req.body;
+      const blockedCreditCard = new BlockCreditCard({
+        creditCardNumber,
+        cardHolderName,
+        ExpiryDate,
+        CVVNumber,
+        reason,
+        email
+      });
+      await blockedCreditCard.save();
+      res.status(200).json(blockedCreditCard);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+});
+
+router.get('/blockcreditcard', async (req, res) => {
+    try {
+      const blockedCreditCards = await BlockCreditCard.find();
+      res.json(blockedCreditCards);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
+    res.json(res.blockedCreditCard);
+  });
+  
+  // Middleware to retrieve a single blocked credit card entry by ID
+  async function getBlockedCreditCard(req, res, next) {
+    let blockedCreditCard;
+    try {
+      blockedCreditCard = await BlockCreditCard.findById(req.params.id);
+      if (blockedCreditCard == null) {
+        return res.status(404).json({ message: 'Blocked credit card not found' });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  
+    res.blockedCreditCard = blockedCreditCard;
+    next();
+  }
+
+  router.delete("/blockcreditcard/:id", async (req, res) => {
+    try {
+        const blockedCreditCards = await BlockCreditCard.findByIdAndDelete(req.params.id);
+        if (!blockedCreditCards) {
+          return res.status(404).send({ message: 'Credit Card not Found' });
+        }
+        res.send({ message: 'Credit Card deleted successfully' });
+      } catch (error) {
+        return res.status(500).json({ message: "Internal Server Error ...!" });
+      }
+  });
+
+
+  router.post("/OtpValidation", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      const user = await BlockCreditCard.findOne({ email });
+      if (!user) {
+        return res.status(404).json({error: "User not found"});
+      }
+      const otpCode = Math.floor(100000 + Math.random() * 900000);
+      user.otp = otpCode;
+      console.log(otpCode);
+      await user.save()
+      sendEmail({
+        to: email,
+        subject:"OTP for Credit Card Block",
+        templateName:"/mail/templates/creditcard-otp.hbs",
+        context:{
+          otp_title: "OTP for Credit Card Block",
+          userName: user. cardHolderName,
+          otp: otpCode,
+          company: "Royal Islamic Bank"
+        }
+      })
+      return res.status(200).json({ message: `An otp has been sent to your email address`})
+    }
+    catch (error){
+      console.error("Error sending otp:", error);
+      res.status(500).json({error: "Internal server error"});
+    }
+  });
+  router.post("/verifyOTP/:email", async (req, res) => {
+    try {
+        const { email } = req.params;
+        const { otp } = req.body;
+        const user = await BlockCreditCard.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.otp === otp) {
+            // OTP matches, set credit card status to inactive
+            user.StatusActive = false;
+            await user.save();
+            return res.status(200).json({ message: "OTP verification successful. Credit card blocked." });
+            
+        } else {
+            
+            return res.status(400).json({ error: "Invalid OTP. Credit card blocked." });
+        }
+    } catch (error) {
+        console.error("Error verifying OTP", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+  // Block Credit Card APIS ends
+
+  //Alert Subscrition APIs Starts
+  const AlertSubscription = require("../models/alertSubscription");
+  router.post('/alertsubscription', async (req, res) => {
+    const { CreditCardNumber } = req.body;
+    console.log(req.body);
+    // Check if credit card number already exists
+   
+  
+    try {
+
+        const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
+        console.log(existingCreditCard);
+        if (existingCreditCard) {
+            console.log("test1");
+            existingCreditCard.isActive = false; // Mark the existing credit card as inactive
+            await existingCreditCard.save();
+            console.log("test2");
+    
+            return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
+        }
+        console.log("test3");
+
+      const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
+      const subscriptionAlert = new AlertSubscription({
+        CreditCardNumber,
+        MobileNumber,
+        emailAddress,
+        subscriptionStatus
+      });
+      console.log("test4");
+      console.log(subscriptionAlert);
+
+      await AlertSubscription.create(req.body);
+      res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+});
+router.delete("/alertsubscription/:id", async (req, res) => {
+    try {
+        const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
+        if (!SubscriptionAlert) {
+          return res.status(404).send({ message: 'Credit Card Details Was not Found' });
+        }
+        res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
+      } catch (error) {
+        return res.status(500).json({ message: "Internal Server Error ...!" });
+      }
+  });
+
+
+  //Alert Subscrition APIs ends
+
 
 
 
