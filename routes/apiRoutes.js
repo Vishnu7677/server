@@ -127,7 +127,7 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
  
 //
  router.use(express.json());
-// 
+ 
 
 router.post('/purchase', async (request, response) => {
     try {
@@ -940,6 +940,101 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
+
+
+router.post('/updateCreditCardTransactions', async (request, response) => {
+    try {
+        const { userAccountNumber, transactions } = request.body;
+
+        const user = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (user) {
+            if (!user.creditCardTransactions) {
+                user.creditCardTransactions = [];
+            }
+            user.creditCardTransactions.push(...transactions);
+
+            await user.save();
+
+            return response.status(200).json({ message: 'Credit card transactions updated successfully' });
+        } else {
+            return response.status(404).json({ message: 'User account not found' });
+        }
+    } catch (error) {
+        console.error(error.message, 'update-credit-card-transactions');
+        return response.status(500).json({ message: 'Internal Server Error at Credit Card Transactions Update' });
+    }
+});
+
+
+router.put('/userDetails/:accountNumber/emiConversion', async (request, response) => {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const { emiTenure, transactions, totalProcessingFee, totalEMIAmount,emi, isChecked } = request.body;
+
+        if (!transactions || !Array.isArray(transactions)) {
+            return response.status(400).json({ message: 'Transactions array is missing or invalid' });
+        }
+
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+
+        if (!userDetails) {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+
+        for (const transaction of transactions) {
+            const transactionId = transaction._id;
+            
+            const selectedTransaction = userDetails.creditCardTransactions.find(t => t._id.toString() === transactionId);
+            if (selectedTransaction) {
+                const newEmiConversion = {
+                    emiTenure,
+                    processingFee: totalProcessingFee,
+                    totalEmi: totalEMIAmount,
+                    emi,
+                    isChecked,
+                    createdAt: new Date()
+                };
+
+                selectedTransaction.convertToEMI.push(newEmiConversion);
+            }
+        }
+
+        await userDetails.save();
+
+        return response.status(201).json({ message: 'EMI conversion added successfully', details: userDetails });
+    } catch (error) {
+        console.error(error.message, 'Error adding EMI conversion');
+        return response.status(500).json({ message: 'Internal Server Error at EMI Conversion API' });
+    }
+});
+
+
+router.post('/auto-debit-setup', async (request, response) => {
+    try {
+        const { userDetails, selectedCreditCard, selectedAccount, autodebitMode } = req.body;
+
+        const autodebitSetup = {
+          setupAutoDebit: 'yes', 
+          autodebitMode: autodebitMode
+        };
+
+        const userAccount = await UserDetailsAccounts.findOneAndUpdate(
+          { userAccountNumber: selectedAccount }, // Assuming account number is unique
+          { $set: { 'userCreditCardDetails.autoDebitSetup': autodebitSetup } },
+          { new: true }
+        );
+    
+        res.status(200).json({ message: 'Autodebit setup successful', userAccount });
+      } catch (error) {
+        console.error('Error creating autodebit setup:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    }
+);
+
+
 
 
 module.exports = router;

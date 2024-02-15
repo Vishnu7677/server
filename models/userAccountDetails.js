@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 
-
-const transactionSchema = new mongoose.Schema({
+const debitCardTransactions = new mongoose.Schema({
   date: String,
   description: String,
   withdrawal: Number,
   deposit: Number,
   balance: Number,
 });
-
 
 const domesticLimitSchema = new mongoose.Schema({
   cashWithdrawalLimit: { type: Number, default: 0 },
@@ -24,9 +22,6 @@ const internationalLimitSchema = new mongoose.Schema({
   contactlessPaymentLimit: { type: Number, default: 0 },
 });
 
-
-
-
 const reissueCardSchema = new mongoose.Schema({
   srn: { type: String, unique: true }
 });
@@ -36,8 +31,6 @@ const userDebitCardPin  = new mongoose.Schema({
   userDebitcardpin : {type:String },
   confirmuserDebitcardpin : {type:String},
 })
-
-
 
 const userDebitCardDetails = new mongoose.Schema({
   userDebitCardNumber: { type: Number },
@@ -57,6 +50,47 @@ const addressSchema = new mongoose.Schema({
   state: { type: String },
   city: { type: String },
   village: { type: String },
+});
+
+const userCreditCardPin  = new mongoose.Schema({
+  userCreditcardpin : {type:String },
+  confirmuserCreditcardpin : {type:String},
+})
+
+const emiConversionSchema = new mongoose.Schema({
+  emiTenure: { type: Number },
+  processingFee: { type: Number },
+  emi: { type: Number },
+  totalEmi : {type:Number},
+  isChecked: { type: Boolean },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const creditcardTransactions = new mongoose.Schema({
+  date: { type: Date },
+  Referencenumber: { type: Number },
+  transactionDetails: { type: String },
+  transactionAmount: { type: Number },
+  convertToEMI: [emiConversionSchema]
+});
+
+
+const autodebitSetup = new mongoose.Schema({
+  setupAutoDebit: { type: String, enum: ['yes', 'no'] },
+  autodebitMode: { type: String, enum: ['minimumdue', 'totaldue'] }
+});
+
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: Number },
+  creditCardLimit: { type: Number },
+  totalAmountDue: { type: Number },
+  currentOutstanding: { type: Number },
+  availableCreditLimit: { type: Number },
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  autoDebitSetup : autodebitSetup
 });
 
 const userDetailsAccounts = new mongoose.Schema({
@@ -79,28 +113,13 @@ const userDetailsAccounts = new mongoose.Schema({
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: { type: Number },
     userDebitCardDetails: userDebitCardDetails,
-    transactions: [transactionSchema],
+    debitCardtransactions: [debitCardTransactions],
     otp: {type: Number},
+    creditCardTransactions : [creditcardTransactions],
+    userCreditCardDetails : [customerCreditCardLimitSchema],
 });
+
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
-
-
-const customerCreditCardLimitSchema = new mongoose.Schema({
-  creditCardNumber: { type: String },
-  creditCardLimit: { type: String },
-  totalAmountDue: { type: String },
-  currentOutstanding: { type: String },
-  availableCreditLimit: { type: String }
-});
-const creditCardLimitSchema = new mongoose.Schema({
-  customerAccountNumber: {type: String},
-  customerName: {type: String},
-  customerMailId: {type: String},
-  customerMobileNumber: {type: String},
-  customerCreditCardLimit: [customerCreditCardLimitSchema]
-});
-const CustomerCreditCardDetails = mongoose.model('CustomerCreditCardDetails', creditCardLimitSchema);
-
 
 
 const payLaterAccount = new mongoose.Schema({
@@ -120,4 +139,4 @@ const payLaterAccount = new mongoose.Schema({
 });
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
-module.exports = { UserDetailsAccounts, PayLaterAccount, CustomerCreditCardDetails };
+module.exports = { UserDetailsAccounts, PayLaterAccount };
