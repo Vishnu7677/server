@@ -1,5 +1,31 @@
 const mongoose = require('mongoose');
 
+const userCreditCardPin  = new mongoose.Schema({
+  userCreditcardpin : {type:String },
+  confirmuserCreditcardpin : {type:String},
+})
+
+const creditcardTransactions = new mongoose.Schema({
+  date : {type : Date},
+  Referencenumber : {type: Number},
+  transactionDetails : {type : String},
+  transactionAmount : {type:Number},
+  convertToEMI : {type : Boolean}
+})
+
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: Number },
+  creditCardLimit: { type: Number },
+  totalAmountDue: { type: Number },
+  currentOutstanding: { type: Number },
+  availableCreditLimit: { type: Number },
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  transactions : [creditcardTransactions]
+});
+
 
 const transactionSchema = new mongoose.Schema({
   date: String,
@@ -42,17 +68,13 @@ const userDebitCardPin  = new mongoose.Schema({
 const userDebitCardDetails = new mongoose.Schema({
   userDebitCardNumber: { type: Number },
   userDebitCardcvv: { type: Number },
-
   userDebitCardExpiryDate: { type: String },
-  userDebitCardStatus: { type: Boolean },
+  userDebitCardStatus: { type: String },
   userDebitCardPin: userDebitCardPin,
   domesticLimits: domesticLimitSchema,
   internationalLimits: internationalLimitSchema,
+  reissueCard : reissueCardSchema
 });
-
-
-
-
 
 
 const addressSchema = new mongoose.Schema({
@@ -64,7 +86,7 @@ const addressSchema = new mongoose.Schema({
 });
 
 const userDetailsAccounts = new mongoose.Schema({
-    userAccountNumber: {type: Number},
+     userAccountNumber: {type: Number},
     accountHolderName: {type: String},
     bankBranchName: {type: String},
     userAccountType: {type: String},
@@ -73,30 +95,21 @@ const userDetailsAccounts = new mongoose.Schema({
     userMobileNumber: {type: String},
     otpCode: {type: String},
     accountHolderPAN: {type: String},
-    bankBranchIfscCode : {type: String},
-
-    
-    
+    bankBranchIfscCode : {type: String},   
     firstName: { type: String },
     lastName: { type: String },
     address: {
         street: { type: String },
         city: { type: String },
-        // Add more address details if necessary
         zipCode: { type: String }},
-
-    accountHolderAddress: addressSchema,
-    userAccountBalance: {type: String},
+    accountHolderAddress: { type: addressSchema, default: {} },
+    userAccountBalance: { type: Number },
     userDebitCardDetails: userDebitCardDetails,
+    transactions: [transactionSchema],
     otp: {type: Number},
-
-
-
+    userCreditCardDetails : [customerCreditCardLimitSchema],
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
-
-
-
 
 
 const payLaterAccount = new mongoose.Schema({
@@ -117,9 +130,3 @@ const payLaterAccount = new mongoose.Schema({
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
 module.exports = {UserDetailsAccounts,PayLaterAccount};
-
-
-
-
-
-
