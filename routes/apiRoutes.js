@@ -3,10 +3,8 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
-const UserDetailsAccounts = require('../models/userAccountDetails');
-
-
-
+ const {UserDetailsAccounts} = require('../models/userAccountDetails');
+ const {generateForm16ASchema} = require('../models/userAccountDetails');
 
 
 
@@ -102,6 +100,73 @@ function calculateFinancialYearTax(interestPaid) {
 }
 
 
+ 
+
+
+router.post('/generatePDF', async (req, res) => {
+    try {
+        const { financialYear, quarter } = req.body;
+
+        // Sample data - Replace this with actual calculation logic based on selected quarter
+        const solutionsSubmitted = 100;
+        const ratePerSolution = 10;
+        const payPercentage = 0.8;
+        const grossEarningPreBonus = solutionsSubmitted * ratePerSolution;
+        const grossBonus = grossEarningPreBonus * 0.2;
+        const grossEarnings = grossEarningPreBonus + grossBonus;
+        const tdsDeduction = grossEarnings * 0.1;
+        const netEarnings = grossEarnings - tdsDeduction;
+
+        // Create a new PDF document
+        const doc = new PDFDocument();
+
+        // Pipe the PDF document to a writable stream
+        const stream = fs.createWriteStream('Form16A.pdf');
+        doc.pipe(stream);
+
+        // Add content to the PDF
+        doc.fontSize(12);
+        doc.text('Financial Year: ' + financialYear);
+        doc.text('Quarter: ' + quarter);
+        doc.moveDown();
+        doc.table({
+            headers: ['Description', 'Amount'],
+            rows: [
+                ['No.of Solutions Submitted', solutionsSubmitted],
+                ['Rate Per Solution', ratePerSolution],
+                ['Pay%', payPercentage],
+                ['Gross Earning Prebonus', grossEarningPreBonus],
+                ['Gross Bonus', grossBonus],
+                ['Gross Earnings', grossEarnings],
+                ['TDS Deduction', tdsDeduction],
+                ['Net Earnings', netEarnings]
+            ],
+            // Position of the table
+            x: 50,
+            y: doc.y
+        });
+
+        // Finalize the PDF
+        doc.end();
+
+        // Send the PDF as a response
+        stream.on('finish', () => {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
+            fs.createReadStream('Form16A.pdf').pipe(res);
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+
+
+
+
+
+
 
 
 
@@ -119,7 +184,6 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
-const Applicants = require('../models/applicant');
   
 
 
@@ -138,6 +202,7 @@ const Applicants = require('../models/applicant');
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
+})
 
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -145,7 +210,7 @@ const sendOTP = require('../utils/sendOtp');
 
 const nodemailer = require('nodemailer');
 
-const UserDetailsAccounts = require('../models/userAccountDetails');
+
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
@@ -171,7 +236,6 @@ router.get("/", (req, res) => {
 
 
 });
-
 
 router.post('/purchase', async (request, response) => {
     try {
@@ -394,57 +458,6 @@ router.post('/verify-otp', async (request, response)=> {
 });
 
 
-
-
-
-// const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
-
-
-router.post('/generate-otp', async (request, response) => {
-    try {
-
-        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
-        if (userDetails) {
-            const generatedOTP = generateOTP();
-            userDetails.otp = generatedOTP;
-            await userDetails.save();
- 
-            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
-
-            return response.status(200).json({ message: 'OTP sent successfully' });
-        } else {
-            return response.status(404).json({ message: 'User not found with the provided account number' });
-        }
-    } catch (error) {
-        console.log(error.message, 'generate PIN and send OTP');
-        return response.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
-router.post('/validate-otp', async (req, res) => {
-    try {
-        const { accountNumber, otp } = req.body;
-
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-
-        if (userDetails && Number(userDetails.otp) === Number(otp)) {
-            userDetails.otp = null;
-            await userDetails.save();
-            return res.status(200).json({ message: 'OTP validated successfully' });
-        } else {
-            console.log('Invalid OTP');
-            return res.status(400).json({ message: 'Invalid OTP' });
-        }
-    } catch (error) {
-        console.error('Error validating OTP:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -480,8 +493,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
-
 
 router.put('/blockCard/:userAccountNumber', async (req, res) => {
     try {
@@ -555,62 +566,9 @@ router.post('/createReissueCard', async (req, res) => {
 });
 
 function generateUniqueSRN() {
+    
     return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
-
-
-
-
-
-  // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
-
-
-router.post('/generate-otp', async (request, response) => {
-    try {
-
-        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
-        if (userDetails) {
-            const generatedOTP = generateOTP();
-            userDetails.otp = generatedOTP;
-            await userDetails.save();
- 
-            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
-
-            return response.status(200).json({ message: 'OTP sent successfully' });
-        } else {
-            return response.status(404).json({ message: 'User not found with the provided account number' });
-        }
-    } catch (error) {
-        console.log(error.message, 'generate PIN and send OTP');
-        return response.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
-
-
-router.post('/validate-otp', async (req, res) => {
-    try {
-        const { accountNumber, otp } = req.body;
-
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-
-        if (userDetails && Number(userDetails.otp) === Number(otp)) {
-            userDetails.otp = null;
-            await userDetails.save();
-            return res.status(200).json({ message: 'OTP validated successfully' });
-        } else {
-            console.log('Invalid OTP');
-            return res.status(400).json({ message: 'Invalid OTP' });
-        }
-    } catch (error) {
-        console.error('Error validating OTP:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
 
 // updating domestic limits
 router.put('/updateDomesticLimits/:accountNumber', async (request, response) => {
@@ -660,9 +618,6 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
   });
 
 
-
-
-
 const addPayLater=async()=>{
     try {
         const payLater = new PayLaterAccount({
@@ -703,6 +658,7 @@ router.get('/payLaterAccount',async(req,res)=>{
 
 });
 
+
 router.post('/quickFundTransfer', async (req, res) => {
     try {
         const quickFundTransferData = req.body;
@@ -738,6 +694,7 @@ router.post('/quickFundTransfer', async (req, res) => {
     }
 });
 
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -761,14 +718,14 @@ router.post('/accountStatement', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
     }
 });
+
+
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 router.post('/generate-otp', async (request, response) => {
     try {
 
         const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
         const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
         if (userDetails) {
             const generatedOTP = generateOTP();
             userDetails.otp = generatedOTP;
@@ -799,14 +756,14 @@ router.post('/validate-otp', async (req, res) => {
         } else {
             console.log('Invalid OTP');
             return res.status(400).json({ message: 'Invalid OTP' });
-        }
+        } 
     } catch (error) {
         console.error('Error validating OTP:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-})
+
 router.put('/payLaterAccount/pay', async (req, res) => {
     const { accountNumber } = req.body;
   
@@ -921,8 +878,6 @@ router.post('/fdformdetails', async (request, response)=> {
 });
 
 
-
-
 router.post('/rdformdetails', async (request, response)=> {
     try {
         const { 
@@ -1019,12 +974,10 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
         const userDetails = await UserDetailsAccounts.findOne({userAccountNumber: accountNumber});
         
         if (userDetails) {
-            return response.status(200).json({ details: userDetails,});
-          
+            return response.status(200).json({ details: userDetails,}); 
         } 
         else if (selectedUser && selectedUser.accountHolderPAN !== accountHolderPAN) {
-          return response.status(400).json({ message: 'PAN number does not match with the account holder'});
-         
+          return response.status(400).json({ message: 'PAN number does not match with the account holder'});   
         }
        
         else {
@@ -1040,17 +993,8 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
     }
 })
 
-
-
-
-
-
-
-
  
 router.post('/submitForm', inwardController.submitForm);
- 
-   
 
 
 
@@ -1083,7 +1027,7 @@ router.post('/vehicleRegistration', async (request, response) => {
     } catch (error) {
         console.error(error.message, 'vehicle-registration');
         // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
-        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+        return res.status(500).json(`{ error: Internal Server Error at Vehicle Registration: ${error.message} }`);
 
     }
 });
@@ -1108,9 +1052,6 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
-
-
-
 
 
 module.exports = router;

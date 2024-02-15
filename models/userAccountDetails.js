@@ -44,7 +44,7 @@ const userDebitCardDetails = new mongoose.Schema({
   userDebitCardcvv: { type: Number },
 
   userDebitCardExpiryDate: { type: String },
-  userDebitCardStatus: { type: Boolean },
+  userDebitCardStatus: { type: String },
   userDebitCardPin: userDebitCardPin,
   domesticLimits: domesticLimitSchema,
   internationalLimits: internationalLimitSchema,
@@ -70,26 +70,16 @@ const userDetailsAccounts = new mongoose.Schema({
     userAccountType: {type: String},
     userDateOfBirth: {type: String},
     userEmailId: {type: String},
-
-
     userMobileNumber: {type: String},
-
-    
     otpCode: {type: String},
-
     accountHolderPAN: {type: String},
     bankBranchIfscCode : {type: String},
-
-    
-    
     firstName: { type: String },
     lastName: { type: String },
     address: {
         street: { type: String },
-        city: { type: String },
-        // Add more address details if necessary
+        city: { type: String }, 
         zipCode: { type: String }},
-
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: {type: String},
     userDebitCardDetails: userDebitCardDetails,
@@ -120,9 +110,11 @@ const payLaterAccount = new mongoose.Schema({
     paidAmount: Number,
     purchaseAmount:Number
   });
-const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
-
-module.exports = {UserDetailsAccounts,PayLaterAccount};
+ 
+  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  
+  module.exports = { UserDetailsAccounts, PayLaterAccount };
+  
 
 
 
