@@ -126,5 +126,32 @@ const payLaterAccount = new mongoose.Schema({
   purchaseAmount: Number
 });
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+const userDetailsAccountsSchema = new mongoose.Schema({
+  // Define the fields based on your frontend form
+  vehicleRegNum: String,
+  vehicleMake: String,
+  vehicleModel: String,
+  customerName: String,
+  mobileNumber: String,
+  emailId: String,
+  address: String,
+  pincode: String,
+  city: String,
+  state: String,
+  // Include other fields as needed
+
+  // Fields for purchase tab
+  purchaseOrderNumber: Number,
+  purchaseOrderNo: String,
+  purchaseOrderDate: String,
+  purchaseIssuesDate: String,
+  agreeTerms: Boolean,
+
+  // Fields for recharge
+  rechargeType: String,
+  vehicleRegistrationNumber: String,
+  rechargeAmount: Number,
+  debitAccount: String
+});
 
 module.exports = { UserDetailsAccounts, PayLaterAccount, CustomerCreditCardDetails };

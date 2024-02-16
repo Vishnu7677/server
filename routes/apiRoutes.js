@@ -173,50 +173,69 @@ router.get("/", (req, res) => {
 
 router.post('/purchase', async (request, response) => {
     try {
-
-        const {
-            vehicleRegNum, vehicleMake, vehicleModel,
-            customerName, mobileNumber, emailId, address, pincode, city, state
-        } = request.body;
-
-        const isAccountNumExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
-        if(!isAccountNumExists){
-
-        const userAccountNumber = parseInt(request.body.userAccountNumber);
-        if (/pattern/.test(userAccountNumber)) {
-            return response.status(400).json({ error: 'User account number must be 9 digits' });
-        }
-
-        let userDetails = await UserDetailsAccounts.findOne({ userAccountNumber });
-
-        if (!userDetails) {
-            
-            userDetails = new UserDetailsAccounts({
-                userAccountNumber,
-                // Add other user details here
-            });
-            await userDetails.save();
-        }
-
-        // Store the vehicle registration details
-        const newApplicant = new Applicants({
-            vehicleRegNum,
-            vehicleMake,
-            vehicleModel,
-            customerDetails: userDetails._id,
-        });
-
-        await newApplicant.save();
-
-        // Assuming success, send success response
-        return response.status(200).json({ message: 'Purchase details stored successfully' });
-    } 
-  }catch (error) {
-        console.error(error.message, 'purchase-error');
-        return response.status(500).json({ error: 'Internal Server Error' });
-    }
+      const {
+        vehicleRegNum,
+        vehicleMake,
+        vehicleModel,
+        customerName,
+        mobileNumber,
+        emailId,
+        address,
+        pincode,
+        city,
+        state,
+        purchaseOrderNo,
+        purchaseOrderDate,
+        purchaseIssuesDate,
+        agreeTerms,
+      } = request.body;
   
-});
+      // Ensure required fields are present
+      if (!vehicleRegNum || !vehicleMake || !vehicleModel || !customerName || !mobileNumber || !emailId ||
+          !address || !pincode || !city || !state || !purchaseOrderNo || !purchaseOrderDate || !purchaseIssuesDate || !agreeTerms) {
+        return response.status(400).json({ message: 'Incomplete form data' });
+      }
+  
+      const purchaseOrderNumber = await generatePurchaseOrderNumber();
+  
+      const newPurchase = new UserDetailsAccounts({
+        vehicleRegNum,
+        vehicleMake,
+        vehicleModel,
+        customerName,
+        mobileNumber,
+        emailId,
+        address,
+        pincode,
+        city,
+        state,
+        purchaseOrderNumber,
+        purchaseOrderNo,
+        purchaseOrderDate,
+        purchaseIssuesDate,
+        agreeTerms,
+      });
+  
+      await newPurchase.save();
+  
+      return response.status(200).json({ message: 'Purchase data saved successfully', purchaseOrderNumber });
+    } catch (error) {
+      console.error('Error during purchase:', error);
+      return response.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
+  
+  async function generatePurchaseOrderNumber() {
+    try {
+      const latestPurchaseOrder = await UserDetailsAccounts.findOne().sort({ purchaseOrderNumber: -1 }).limit(1);
+      const lastOrderNumber = latestPurchaseOrder ? latestPurchaseOrder.purchaseOrderNumber : 0;
+      const newOrderNumber = lastOrderNumber + 1;
+      return newOrderNumber;
+    } catch (error) {
+      console.error('Error during purchase order number generation:', error);
+      throw error;
+    }
+  }
 
 
 
