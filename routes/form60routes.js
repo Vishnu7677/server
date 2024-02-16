@@ -179,29 +179,29 @@ router.post("/verify-otp/:EmailID", async (req, res) =>{
   }
 });
 
-router.post("/verify-otp/:EmailID", async (req, res) =>{
-  try{
-    const { email } = req.params
-    const { enteredOtp } = req.body;
-    const user = await Form60Details.findOne({ email });
+// router.post("/verify-otp/:EmailID", async (req, res) =>{
+//   try{
+//     const { email } = req.params
+//     const { enteredOtp } = req.body;
+//     const user = await Form60Details.findOne({ email });
     
-    if (!user) {
-      return res.status(404).json({error: "User not found"});
-    }
-    if(user.otp === enteredOtp){
-      //otp matches, you can perform further actions 
-      return res.status(200).json({ message: "OTP verification successful"});
-    }else{
-      //OTP does not match
-      return res.status(400).json({error: "Invalid OTP"});
-    }
+//     if (!user) {
+//       return res.status(404).json({error: "User not found"});
+//     }
+//     if(user.otp === enteredOtp){
+//       //otp matches, you can perform further actions 
+//       return res.status(200).json({ message: "OTP verification successful"});
+//     }else{
+//       //OTP does not match
+//       return res.status(400).json({error: "Invalid OTP"});
+//     }
 
-  }catch (error) {
-    console.error("Error verufying OTP",error);
-    res.status(500).json({error: "Internal Server Error"});
+//   }catch (error) {
+//     console.error("Error verufying OTP",error);
+//     res.status(500).json({error: "Internal Server Error"});
 
-  }
-});
+//   }
+// });
 
 
 
