@@ -3,10 +3,46 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
-const UserDetailsAccounts = require('../models/userAccountDetails');
 
+const {UserDetailsAccounts} = require('../models/userAccountDetails');
+const axios = require('axios');
 
-
+// aadhar
+router.post('/validate-aadhaar', async (req, res) => {
+    const { aadhaarNumber } = req.body;
+  
+    if (!aadhaarNumber) {
+      return res.status(400).json({ error: 'Aadhaar number is required.' });
+    }
+  
+    const encodedParams = new URLSearchParams();
+    encodedParams.set('txn_id', '17c6fa41-778f-49c1-a80a-cfaf7fae2fb8');
+    encodedParams.set('consent', 'Y');
+    encodedParams.set('uidnumber', aadhaarNumber);
+    encodedParams.set('clientid', '222');
+    encodedParams.set('method', 'uidvalidatev2');
+  
+    const options = {
+      method: 'POST',
+      url: 'https://verifyaadhaarnumber.p.rapidapi.com/Uidverifywebsvcv1/VerifyAadhaarNumber',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'X-RapidAPI-Key': '6e52bb948cmshe5fe0588768acfcp123e37jsna917927a11e6',
+        'X-RapidAPI-Host': 'verifyaadhaarnumber.p.rapidapi.com'
+      },
+      data: encodedParams,
+    };
+  
+    try {
+      const response = await axios.request(options);
+      return res.status(200).json(response.data);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+ 
+// Aadhar
 
 
 
@@ -120,13 +156,14 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 const Applicants = require('../models/applicant');
-const { TaxverifyOTP, TaxsendOTP } = require("../controllers/otpController");
+const { TaxverifyOTP, generateOTP, resendOTP   } = require("../controllers/otpController");
   
 
 
- 
-router.post('/send-OneTP', TaxsendOTP);
-router.post('/verify-OneTP', TaxverifyOTP);
+router.post('/api/generate-otp ', generateOTP);
+router.post('/api/resend-otp ',  resendOTP);
+// router.post('/send-OneTP', TaxsendOTP);
+router.post('/api/verify-OneTP', TaxverifyOTP);
 
 // scheduled ends
 //   
@@ -1115,4 +1152,27 @@ router.post('/fastagRecharge', async (request, response) => {
 
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

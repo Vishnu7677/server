@@ -2,12 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+ 
 
 const path = require("path");
 
 const dbConfig = require('./utils/dbConfig');
 // sairam inwardremitance code starts
-const apiRoutes = require('./routes/apiRoutes')
+const apiRoutes = require('./routes/apiRoutes');
 // sairam inwardremitance code ends
 const dotenv = require('dotenv');
 
@@ -18,7 +19,8 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
   
 // 
-const {TaxsendOTP, TaxverifyOTP } = require('./controllers/otpController');
+// const {TaxsendOTP, TaxverifyOTP } = require('./controllers/otpController');
+const {generateOTP, resendOTP, TaxverifyOTP } = require('./controllers/otpController');
 
 // app.use('/api/auth', authRoutes);
  
@@ -37,12 +39,15 @@ const port = 4444 || process.env.PORT
 
 // 
 app.use(bodyParser.json());
-// 
+// aadhar
+app.use(bodyParser.urlencoded({ extended: true }));
+ 
+// aadhar
 app.use(cors()) ;
 app.use(express.json());
 require('dotenv').config()
 // scheduled starts 
-app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.urlencoded({ extended: false }));
 // scheduled ends
 
 mongoose.connect(dbConfig, {
@@ -63,7 +68,11 @@ mongoose.connect(dbConfig, {
 // inward remittance sched ends 
 // 
 
-app.post('/api/send-OneTP', TaxsendOTP);
+
+app.post('/api/generate-otp', generateOTP );
+app.post('/api/resend-otp', resendOTP );
+
+// app.post('/api/send-OneTP', TaxsendOTP);
 app.post('/api/verify-OneTP', TaxverifyOTP);
 
 
