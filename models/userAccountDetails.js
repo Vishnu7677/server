@@ -75,11 +75,6 @@ const creditcardTransactions = new mongoose.Schema({
 });
 
 
-const autodebitSetup = new mongoose.Schema({
-  setupAutoDebit: { type: String, enum: ['yes', 'no'] },
-  autodebitMode: { type: String, enum: ['minimumdue', 'totaldue'] }
-});
-
 const customerCreditCardLimitSchema = new mongoose.Schema({
   creditCardNumber: { type: Number },
   creditCardLimit: { type: Number },
@@ -90,7 +85,9 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   userCreditCardExpiryDate: { type: String },
   userCreditCardStatus: { type: String },
   userCreditCardPin: userCreditCardPin,
-  autoDebitSetup : autodebitSetup
+  autoDebitSetup : { setupAutoDebit: { type: String },
+  autodebitMode: { type: String }
+}
 });
 
 const userDetailsAccounts = new mongoose.Schema({

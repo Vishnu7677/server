@@ -1011,28 +1011,63 @@ router.put('/userDetails/:accountNumber/emiConversion', async (request, response
 });
 
 
-router.post('/auto-debit-setup', async (request, response) => {
+router.post('/autodebit/no', async (req, res) => {
     try {
-        const { userDetails, selectedCreditCard, selectedAccount, autodebitMode } = req.body;
+       
+        const { userDetails, selectedCreditCard, setupAutoDebit } = req.body;
 
-        const autodebitSetup = {
-          setupAutoDebit: 'yes', 
-          autodebitMode: autodebitMode
-        };
+        const userAccount = new UserDetailsAccounts({
+            userDetails,
+            selectedCreditCard,
+            setupAutoDebit
+        });
 
-        const userAccount = await UserDetailsAccounts.findOneAndUpdate(
-          { userAccountNumber: selectedAccount }, // Assuming account number is unique
-          { $set: { 'userCreditCardDetails.autoDebitSetup': autodebitSetup } },
-          { new: true }
-        );
-    
-        res.status(200).json({ message: 'Autodebit setup successful', userAccount });
-      } catch (error) {
-        console.error('Error creating autodebit setup:', error);
-        res.status(500).json({ message: 'Internal server error' });
-      }
+        await userAccount.save();
+
+        res.status(200).json({ message: 'Data stored successfully.' });
+    } catch (error) {
+        console.error('Error storing data:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
-);
+});
+
+// Route for posting data when setupAutoDebit is 'yes'
+router.post('/autodebit/yes', async (req, res) => {
+    try {
+        const { selectedCreditCard, selectedAccount, autodebitMode, setupAutoDebit } = req.body;
+
+        console.log(selectedCreditCard, selectedAccount, autodebitMode, setupAutoDebit)
+       
+        if (!selectedCreditCard || !selectedAccount || !autodebitMode || !setupAutoDebit) {
+            return res.status(400).json({ error: 'Missing fields in request body' });
+        }
+
+        // Find user account by userAccountNumber
+        const userAccount = await UserDetailsAccounts.findOne({ userAccountNumber: selectedAccount });
+
+        console.log(userAccount)
+
+        if (!userAccount) {
+            return res.status(404).json({ error: 'User account not found' });
+        }
+
+       // Ensure autoDebitSetup is initialized as an array
+if (!userAccount.userCreditCardDetails.autoDebitSetup) {
+    userAccount.userCreditCardDetails.autoDebitSetup = [];
+}
+
+// Push new autodebit setup to the array
+userAccount.userCreditCardDetails.autoDebitSetup.push({ autodebitMode, setupAutoDebit });
+
+        // Save the updated user account
+        const updatedUserAccount = await userAccount.save();
+
+        res.status(200).json({ message: 'Data posted successfully.' });
+    } catch (error) {
+        console.error('Error posting data:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 
 
