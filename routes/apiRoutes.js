@@ -4,6 +4,14 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const sendOTP = require('../utils/sendOtp');
+const nodemailer = require('nodemailer');
+const {PayLaterAccount} = require('../models/userAccountDetails');
+const bcrypt = require('bcrypt');
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
 
 const { sendEmail } = require("../emailServiecs");
 
@@ -132,8 +140,10 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
  router.use(express.json());
 
 
+
 router.post('/purchase', async (request, response) => {
     try {
+         
 
         const {
             vehicleRegNum, vehicleMake, vehicleModel,
@@ -181,7 +191,7 @@ router.post('/purchase', async (request, response) => {
 
 
 
-router.post('/customerAccountCreation', async (request, response) => {
+router.post('/accountCreation', async (request, response) => {
 
 
     try {
@@ -237,6 +247,7 @@ router.post('/customerAccountCreation', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at User Account Creation' });
     }
 });
+
 
 
 router.get('/userDetails/:accountNumber', async (request, response) => {
@@ -301,6 +312,7 @@ router.post('/otp-send', async (req,res)=> {
             subject: 'Royal Islamic Bank User Authentication',
             html:
              `  <div>
+             
                     <p>Dear ${existingOtp.accountHolderName},</p>
                     <p>
                         Your OTP is ${otpcode}. Do not share it with anyone by any means. This is confidential and to be used by you only.
@@ -309,6 +321,7 @@ router.post('/otp-send', async (req,res)=> {
                     <div>Royal Islamic Bank (RIB)</div>
                 </div>
             `
+            
         };
       
             let info = await transporter.sendMail(mailOptions);
@@ -347,6 +360,7 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
+
 
 
   router.post('/creditcarddetails', async (request, response) => {
@@ -504,6 +518,7 @@ router.put('/update-domesticcardusage', async (request, response) => {
 });
 
 
+
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -539,6 +554,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
+
 
 
 
@@ -710,6 +726,7 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
 
 
 
+
   router.post('/updateCreditCardDetails', async (request, response) => {
     try {
         const { userAccountNumber, creditCardDetails } = request.body;
@@ -733,6 +750,7 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
         return response.status(500).json({ message: 'Internal Server Error at Credit Card Details Update' });
     }
 });
+
 
 
 
@@ -827,6 +845,68 @@ router.post('/quickFundTransfer', async (req, res) => {
     }
 });
 
+
+router.post('/debit-notification', async (req, res) => {
+    try {
+        const { email, amountDebited } = req.body;
+
+        // Validate that amount is a valid numeric value
+        const isValidAmount = !isNaN(amountDebited);
+        if (!isValidAmount) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+
+        // Deduct the amount from the user's account
+        const userAccountNumber = req.body.userAccountNumber; // Assuming user account number is provided in the request
+        await UserDetailsAccounts.updateOne(
+            { userAccountNumber: userAccountNumber },
+            { $inc: { userAccountBalance: -amountDebited } }
+        );
+        
+
+
+
+        // Get user details for sending notification
+        const user = await UserDetailsAccounts.findOne({ userEmailId: email });
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            service: 'gmail',
+            port: 465,
+            secure: true,
+            auth: {
+              user: "gsathya567@gmail.com",
+              pass: 'vrjk vaea htjj frhd'
+              
+              
+            }
+            
+        });
+
+
+        const mailOptions = {
+            from: 'gsathya567@gmail.com',
+            to: email,
+            subject: 'Debit Notification',
+            html: `
+                <div>
+                    <p>Dear ${user.accountHolderName},</p>
+                    <p>An amount of ${amountDebited} has been debited from your account.and credited to satya</p>
+                    <div>Warm regards,</div>
+                    <div>Royal Islamic Bank (RIB)</div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({ success: true, message: 'Debit notification sent successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 router.post('/accountStatement', async (request, response) => {
     try {
@@ -1158,7 +1238,7 @@ router.post('/vehicleRegistration', async (request, response) => {
     } catch (error) {
         console.error(error.message, 'vehicle-registration');
         // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
-        return res.status(500).json({ error: `Internal Server Error at Vehicle Registration: ${error.message}` });
+        return res.status(500).json({ error:`Internal Server Error at Vehicle Registration: ${error.message}` });
 
     }
 });
@@ -1183,6 +1263,7 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
 
 
 
@@ -1521,4 +1602,5 @@ router.post('/autodebit/no', async (req, res) => {
 
 
 module.exports = router;
+
 

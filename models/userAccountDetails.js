@@ -146,6 +146,7 @@ const userDetailsAccounts = new mongoose.Schema({
     userAccountBalance: { type: Number },
     userDebitCardDetails: userDebitCardDetails,
 
+
     transactions: [transactionSchema],
     otp: {type: Number},
 
@@ -154,13 +155,14 @@ const userDetailsAccounts = new mongoose.Schema({
     creditCardTransactions : [creditcardTransactions],
 
     userCreditCardDetails : [customerCreditCardLimitSchema],
+
 });
 
 
 
 
-
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
+
 
 const payLaterAccount = new mongoose.Schema({
   accountNumber: Number,
@@ -180,6 +182,8 @@ const payLaterAccount = new mongoose.Schema({
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
 
+
 module.exports = {UserDetailsAccounts,PayLaterAccount};
+
 
 
