@@ -135,12 +135,17 @@ const userDetailsAccounts = new mongoose.Schema({
     userMobileNumber: {type: String},
     otpCode: {type: String},
     accountHolderPAN: {type: String},
-    bankBranchIfscCode : {type: String},   
+
+    bankBranchIfscCode : {type: String},
+
+
     firstName: { type: String },
     lastName: { type: String },
     address: {
         street: { type: String },
-        city: { type: String },
+
+        city: { type: String }, 
+
         zipCode: { type: String }},
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: { type: Number },
@@ -165,21 +170,46 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 
 
 const payLaterAccount = new mongoose.Schema({
-  accountNumber: Number,
-  accountType: String,
-  totalCreditLimit: String,
-  utilisedLimit: String,
-  availableLimit: String,
-  amountDue: String,
-  dueDate: String,
-  lateFee: String,
-  totalAdjustAmount: String,
-  totalAmountPayable: String,
-  billPeriod: String,
-  paidAmount: Number,
-  purchaseAmount: Number
+
 });
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+const userDetailsAccountsSchema = new mongoose.Schema({
+  // Define the fields based on your frontend form
+  vehicleRegNum: String,
+  vehicleMake: String,
+  vehicleModel: String,
+  customerName: String,
+  mobileNumber: String,
+  emailId: String,
+  address: String,
+  pincode: String,
+  city: String,
+  state: String,
+  // Include other fields as needed
+
+  // Fields for purchase tab
+  purchaseOrderNumber: Number,
+  purchaseOrderNo: String,
+  purchaseOrderDate: String,
+  purchaseIssuesDate: String,
+  agreeTerms: Boolean,
+
+  // Fields for recharge
+  rechargeType: String,
+  vehicleRegistrationNumber: String,
+  rechargeAmount: Number,
+  debitAccount: String
+});
+
+
+   
+  });
+ 
+  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  
+  module.exports = { UserDetailsAccounts, PayLaterAccount };
+  
+
 
 
 
