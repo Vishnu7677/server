@@ -1,6 +1,36 @@
 const mongoose = require('mongoose');
 
-const debitCardTransactions = new mongoose.Schema({
+
+const userCreditCardPin  = new mongoose.Schema({
+  userCreditcardpin : {type:String },
+  confirmuserCreditcardpin : {type:String},
+})
+
+const creditcardTransactions = new mongoose.Schema({
+  date : {type : Date},
+  Referencenumber : {type: Number},
+  transactionDetails : {type : String},
+  transactionAmount : {type:Number},
+  convertToEMI : {type : Boolean}
+})
+
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: Number },
+  creditCardLimit: { type: Number },
+  totalAmountDue: { type: Number },
+  currentOutstanding: { type: Number },
+  availableCreditLimit: { type: Number },
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  transactions : [creditcardTransactions]
+});
+
+
+const transactionSchema = new mongoose.Schema({
+
+
   date: String,
   description: String,
   withdrawal: Number,
@@ -124,17 +154,22 @@ const userDetailsAccounts = new mongoose.Schema({
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: { type: Number },
     userDebitCardDetails: userDebitCardDetails,
-    debitCardtransactions: [debitCardTransactions],
+
+    transactions: [transactionSchema],
     otp: {type: Number},
+
+    
+  
     creditCardTransactions : [creditcardTransactions],
+
     userCreditCardDetails : [customerCreditCardLimitSchema],
 });
 
 
 
 
-const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
+const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
 const payLaterAccount = new mongoose.Schema({
   accountNumber: Number,
@@ -153,4 +188,7 @@ const payLaterAccount = new mongoose.Schema({
 });
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
-module.exports = { UserDetailsAccounts, PayLaterAccount };
+
+module.exports = {UserDetailsAccounts,PayLaterAccount};
+
+

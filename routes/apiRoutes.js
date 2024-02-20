@@ -16,10 +16,6 @@ const transferTransactionController = require('../controllers/transferController
 
 
 
-
-
-
-
 router.post("/generateCertificate", async (request, response) => {
   try {
     const {
@@ -131,7 +127,6 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
  router.use(express.json());
 
 
-
 router.post('/purchase', async (request, response) => {
     try {
 
@@ -180,7 +175,9 @@ router.post('/purchase', async (request, response) => {
 });
 
 
+
 router.post('/customerAccountCreation', async (request, response) => {
+
 
     try {
         const {
@@ -236,6 +233,7 @@ router.post('/customerAccountCreation', async (request, response) => {
     }
 });
 
+
 router.get('/userDetails/:accountNumber', async (request, response) => {
     try {
         const accountNumber = request.params.accountNumber;
@@ -253,15 +251,14 @@ router.get('/userDetails/:accountNumber', async (request, response) => {
     }
 });
 
-router.post('/otpsend', async (req,res)=> {
+router.post('/otp-send', async (req,res)=> {
     try {
       
         let otpcode = Math.floor(100000 + Math.random() * 900000);
-        const email = req.body.email
       
         const responseType = {};
     
-        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: email });
+        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
       
         if (existingOtp) {
             existingOtp.otpCode = otpcode;
@@ -270,8 +267,8 @@ router.post('/otpsend', async (req,res)=> {
         else {
             // Create new OTP
             let otpData = new UserDetailsAccounts({
-                userEmailId: email,
-                otpCode: otpcode,
+                userEmailId: req.body.email,
+                code: otpcode,
             });
             await otpData.save();
         }
@@ -292,10 +289,10 @@ router.post('/otpsend', async (req,res)=> {
             }
         });
       
-        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: email });
+        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
         let mailOptions = {
             from: 'giribabu8719@gmail.com',
-            to: email,
+            to: req.body.email,
             subject: 'Royal Islamic Bank User Authentication',
             html:
              `  <div>
@@ -312,7 +309,7 @@ router.post('/otpsend', async (req,res)=> {
             let info = await transporter.sendMail(mailOptions);
       
             res.status(200).json(responseType);
-        }
+        } 
         catch (error) {
           console.error(error);
           res.status(500).json({
@@ -346,7 +343,8 @@ router.post('/verify-otp', async (request, response)=> {
     }
 });
 
-router.post('/creditcarddetails', async (request, response) => {
+
+  router.post('/creditcarddetails', async (request, response) => {
     try {
         const { userAccountNumber, userCreditCardDetails} = request.body;
         const isUserExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
@@ -500,6 +498,7 @@ router.put('/update-domesticcardusage', async (request, response) => {
     }
 });
 
+
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -535,6 +534,52 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
+
+
+
+  router.post('/generate-Credit-Card-Pin', async (req, res) => {
+    try {
+        const { userAccountNumber, creditCardPin, confirmCreditCardPin } = req.body;
+
+        if (creditCardPin !== confirmCreditCardPin) {
+            return res.status(400).json({ error: 'PINs do not match' });
+        }
+
+        let user = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Find the credit card details for the user (assuming there's only one credit card)
+        let creditCardDetails = user.userCreditCardDetails[0];
+
+        if (!creditCardDetails) {
+            return res.status(404).json({ error: 'Credit card details not found' });
+        }
+
+        // Hash the credit card PIN
+        const hashedCreditCardPin = await bcrypt.hash(creditCardPin, 10);
+        const hashedConfirmCreditCardPin = await bcrypt.hash(confirmCreditCardPin, 10);
+
+        // Update the credit card PIN
+        user.userCreditCardDetails[0].userCreditCardPin.userCreditcardpin = hashedCreditCardPin;
+        user.userCreditCardDetails[0].userCreditCardPin.confirmuserCreditcardpin = hashedConfirmCreditCardPin;
+
+        await user.save();
+
+        return res.json({ success: true, message: 'Credit card PIN generated successfully' });
+    } catch (error) {
+        console.error(error); // Log the specific error here
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+
+
+
 
 router.put('/blockCard/:userAccountNumber', async (req, res) => {
     try {
@@ -659,6 +704,34 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
   });
 
 
+
+  router.post('/updateCreditCardDetails', async (request, response) => {
+    try {
+        const { userAccountNumber, creditCardDetails } = request.body;
+
+        const user = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (user) {
+            if (!user.userCreditCardDetails) {
+                user.userCreditCardDetails = [];
+            }
+            user.userCreditCardDetails.push(creditCardDetails);
+
+            await user.save();
+
+            return response.status(200).json({ message: 'Credit card details updated successfully' });
+        } else {
+            return response.status(404).json({ message: 'User account not found' });
+        }
+    } catch (error) {
+        console.error(error.message, 'update-credit-card-details');
+        return response.status(500).json({ message: 'Internal Server Error at Credit Card Details Update' });
+    }
+});
+
+
+
+
 const addPayLater=async()=>{
     try {
         const payLater = new PayLaterAccount({
@@ -699,13 +772,12 @@ router.get('/payLaterAccount',async(req,res)=>{
 
 });
 
+
 router.post('/quickFundTransfer', async (req, res) => {
     try {
         const quickFundTransferData = req.body;
 
-    
         if (quickFundTransferData.transferType === 'royal') {
-            
             const isToAccountRoyal = await UserDetailsAccounts.exists({
                 userAccountNumber: quickFundTransferData.toAccountNumber,
             });
@@ -714,20 +786,36 @@ router.post('/quickFundTransfer', async (req, res) => {
                 return res.status(400).json({ error: 'To Account Number is not a Royal Bank account' });
             }
         } else {
-            
-            
-    
-            const isValidToAccount = true; 
+            const isValidToAccount = true;
 
             if (!isValidToAccount) {
                 return res.status(400).json({ error: 'Invalid To Account Number for other banks' });
             }
         }
 
-        
+        // Save transaction data
         const savedData = await QuickFundTransferModel.create(quickFundTransferData);
-        return res.json(savedData);
 
+        // Validate that amount is a valid numeric value
+        const isValidAmount = !isNaN(quickFundTransferData.amount);
+
+        if (!isValidAmount) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+
+        // Deduct the amount from the source account
+        await UserDetailsAccounts.updateOne(
+            { userAccountNumber: quickFundTransferData.transferForm },
+            { $inc: { userAccountBalance: -parseInt(quickFundTransferData.amount) } }
+        );
+
+        // Credit the amount to the destination account
+        await UserDetailsAccounts.updateOne(
+            { userAccountNumber: quickFundTransferData.toAccountNumber },
+            { $inc: { userAccountBalance: parseInt(quickFundTransferData.amount) } }
+        );
+
+        return res.json(savedData);
     } catch (error) {
         console.error('Error in quickFundTransfer:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -1093,6 +1181,7 @@ router.post('/fastagRecharge', async (request, response) => {
 
 
 
+
 router.post('/updateCreditCardTransactions', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -1232,6 +1321,7 @@ router.post('/autodebit/no', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 
 
