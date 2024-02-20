@@ -4,6 +4,10 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
 
+
+ const {generateForm16ASchema} = require('../models/userAccountDetails');
+
+
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -67,6 +71,7 @@ router.post('/validate-aadhaar', async (req, res) => {
 // const inwardController = require('../controllers/inwardController');
 // const paymentTransactionController = require('../controllers/paymentController');
 // const transferTransactionController = require('../controllers/transferController');
+
 
 
 
@@ -163,6 +168,83 @@ function calculateFinancialYearTax(interestPaid) {
 }
 
 
+
+ 
+
+
+router.post('/generatePDF', async (req, res) => {
+    try {
+        const { financialYear, quarter } = req.body;
+
+        // Sample data - Replace this with actual calculation logic based on selected quarter
+        const solutionsSubmitted = 100;
+        const ratePerSolution = 10;
+        const payPercentage = 0.8;
+        const grossEarningPreBonus = solutionsSubmitted * ratePerSolution;
+        const grossBonus = grossEarningPreBonus * 0.2;
+        const grossEarnings = grossEarningPreBonus + grossBonus;
+        const tdsDeduction = grossEarnings * 0.1;
+        const netEarnings = grossEarnings - tdsDeduction;
+
+        // Create a new PDF document
+        const doc = new PDFDocument();
+
+        // Pipe the PDF document to a writable stream
+        const stream = fs.createWriteStream('Form16A.pdf');
+        doc.pipe(stream);
+
+        // Add content to the PDF
+        doc.fontSize(12);
+        doc.text('Financial Year: ' + financialYear);
+        doc.text('Quarter: ' + quarter);
+        doc.moveDown();
+        doc.table({
+            headers: ['Description', 'Amount'],
+            rows: [
+                ['No.of Solutions Submitted', solutionsSubmitted],
+                ['Rate Per Solution', ratePerSolution],
+                ['Pay%', payPercentage],
+                ['Gross Earning Prebonus', grossEarningPreBonus],
+                ['Gross Bonus', grossBonus],
+                ['Gross Earnings', grossEarnings],
+                ['TDS Deduction', tdsDeduction],
+                ['Net Earnings', netEarnings]
+            ],
+            // Position of the table
+            x: 50,
+            y: doc.y
+        });
+
+        // Finalize the PDF
+        doc.end();
+
+        // Send the PDF as a response
+        stream.on('finish', () => {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
+            fs.createReadStream('Form16A.pdf').pipe(res);
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
+
+
+
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
@@ -173,8 +255,10 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
+
 // const Applicants = require('../models/applicant');
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
+
   
 
 
@@ -195,6 +279,39 @@ router.post('/api/verify-OneTP', TaxverifyOTP);
  
 //
  router.use(express.json());
+
+// 
+
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+})
+
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const sendOTP = require('../utils/sendOtp');
+
+
+const nodemailer = require('nodemailer');
+
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
+
+
+
+
+const {PayLaterAccount} = require('../models/userAccountDetails');
+
+
+
+
+
+
+const bcrypt = require('bcrypt');
+
+
+
+
+
+
 
 
 
@@ -421,6 +538,7 @@ router.post('/verify-otp', async (request, response)=> {
 
 
 
+
   router.post('/creditcarddetails', async (request, response) => {
     try {
         const { userAccountNumber, userCreditCardDetails} = request.body;
@@ -577,6 +695,7 @@ router.put('/update-domesticcardusage', async (request, response) => {
 
 
 
+
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -612,6 +731,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
+
 
 
 
@@ -653,6 +773,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 
 
@@ -732,6 +853,7 @@ router.post('/createReissueCard', async (req, res) => {
 });
 
 function generateUniqueSRN() {
+    
     return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
@@ -808,6 +930,7 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
         return response.status(500).json({ message: 'Internal Server Error at Credit Card Details Update' });
     }
 });
+
 
 
 
@@ -904,6 +1027,7 @@ router.post('/quickFundTransfer', async (req, res) => {
 });
 
 
+
 router.post('/debit-notification', async (req, res) => {
     try {
         const { email, amountDebited } = req.body;
@@ -966,6 +1090,7 @@ router.post('/debit-notification', async (req, res) => {
     }
 });
 
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -989,6 +1114,8 @@ router.post('/accountStatement', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
     }
 });
+
+
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 router.post('/generate-otp', async (request, response) => {
     try {
@@ -1025,7 +1152,7 @@ router.post('/validate-otp', async (req, res) => {
         } else {
             console.log('Invalid OTP');
             return res.status(400).json({ message: 'Invalid OTP' });
-        }
+        } 
     } catch (error) {
         console.error('Error validating OTP:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -1296,7 +1423,9 @@ router.post('/vehicleRegistration', async (request, response) => {
     } catch (error) {
         console.error(error.message, 'vehicle-registration');
         // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
-        return res.status(500).json({ error:`Internal Server Error at Vehicle Registration: ${error.message}` });
+
+        return res.status(500).json(`{ error: Internal Server Error at Vehicle Registration: ${error.message} }`);
+
 
     }
 });
@@ -1321,6 +1450,7 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
 
 
 
@@ -1653,6 +1783,7 @@ router.post('/autodebit/no', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+
 
 
 

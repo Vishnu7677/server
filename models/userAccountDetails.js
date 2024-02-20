@@ -135,12 +135,17 @@ const userDetailsAccounts = new mongoose.Schema({
     userMobileNumber: {type: String},
     otpCode: {type: String},
     accountHolderPAN: {type: String},
-    bankBranchIfscCode : {type: String},   
+
+    bankBranchIfscCode : {type: String},
+
+
     firstName: { type: String },
     lastName: { type: String },
     address: {
         street: { type: String },
-        city: { type: String },
+
+        city: { type: String }, 
+
         zipCode: { type: String }},
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: { type: Number },
@@ -165,21 +170,27 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 
 
 const payLaterAccount = new mongoose.Schema({
-  accountNumber: Number,
-  accountType: String,
-  totalCreditLimit: String,
-  utilisedLimit: String,
-  availableLimit: String,
-  amountDue: String,
-  dueDate: String,
-  lateFee: String,
-  totalAdjustAmount: String,
-  totalAmountPayable: String,
-  billPeriod: String,
-  paidAmount: Number,
-  purchaseAmount: Number
-});
-const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+
+    accountNumber: Number,
+    accountType: String,
+    totalCreditLimit: String,
+    utilisedLimit: String,
+    availableLimit: String,
+    amountDue: String,
+    dueDate: String,
+    lateFee: String,
+    totalAdjustAmount: String,
+    totalAmountPayable: String,
+    billPeriod: String,
+    paidAmount: Number,
+    purchaseAmount:Number
+  });
+ 
+  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  
+  module.exports = { UserDetailsAccounts, PayLaterAccount };
+  
+
 
 
 
