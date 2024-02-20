@@ -12,6 +12,7 @@ exports.submitForm = async (req, res) => {
             reviewAccuracy,
              purposeOfRemittance,
               bookFXDeal,
+              amount, currency
              } = req.body;
 
     const newUser = new UserINRM({
@@ -24,6 +25,8 @@ exports.submitForm = async (req, res) => {
       reviewAccuracy,
       purposeOfRemittance,
       bookFXDeal,
+      amount, // Include amount in the newUser object
+      currency,
     });
 
     // Save the user data to MongoDB
