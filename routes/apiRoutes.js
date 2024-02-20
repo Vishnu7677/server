@@ -317,6 +317,7 @@ const bcrypt = require('bcrypt');
 
 router.post('/purchase', async (request, response) => {
     try {
+
          
 
         const {
@@ -360,9 +361,21 @@ router.post('/purchase', async (request, response) => {
   }catch (error) {
         console.error(error.message, 'purchase-error');
         return response.status(500).json({ error: 'Internal Server Error' });
+
     }
+  });
   
-});
+  async function generatePurchaseOrderNumber() {
+    try {
+      const latestPurchaseOrder = await UserDetailsAccounts.findOne().sort({ purchaseOrderNumber: -1 }).limit(1);
+      const lastOrderNumber = latestPurchaseOrder ? latestPurchaseOrder.purchaseOrderNumber : 0;
+      const newOrderNumber = lastOrderNumber + 1;
+      return newOrderNumber;
+    } catch (error) {
+      console.error('Error during purchase order number generation:', error);
+      throw error;
+    }
+  }
 
 
 
