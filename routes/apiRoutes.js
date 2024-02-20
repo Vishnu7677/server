@@ -18,6 +18,8 @@ const transferTransactionController = require('../controllers/transferController
 
 
 
+
+
 router.post("/generateCertificate", async (request, response) => {
   try {
     const {
@@ -127,7 +129,41 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
  
 //
  router.use(express.json());
- 
+
+// 
+
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+  
+  )};
+
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const sendOTP = require('../utils/sendOtp');
+
+
+const nodemailer = require('nodemailer');
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
+
+
+
+
+const {PayLaterAccount} = require('../models/userAccountDetails');
+
+
+
+
+
+
+const bcrypt = require('bcrypt');
+
+
+
+
+
+
+
+
 
 router.post('/purchase', async (request, response) => {
     try {
@@ -178,7 +214,7 @@ router.post('/purchase', async (request, response) => {
 
 
 
-router.post('/accountCreation', async (request, response) => {
+router.post('/customerAccountCreation', async (request, response) => {
 
     try {
         const {
@@ -234,7 +270,6 @@ router.post('/accountCreation', async (request, response) => {
     }
 });
 
-
 router.get('/userDetails/:accountNumber', async (request, response) => {
     try {
         const accountNumber = request.params.accountNumber;
@@ -248,20 +283,19 @@ router.get('/userDetails/:accountNumber', async (request, response) => {
     }
     catch (error) {
         console.log(error.message, 'account details');
-
         return response.status(500).json({message: 'Internal Server Error at Account Details API'})
-
     }
 });
 
-router.post('/otp-send', async (req,res)=> {
+router.post('/otpsend', async (req,res)=> {
     try {
       
         let otpcode = Math.floor(100000 + Math.random() * 900000);
+        const email = req.body.email
       
         const responseType = {};
     
-        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
+        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: email });
       
         if (existingOtp) {
             existingOtp.otpCode = otpcode;
@@ -270,8 +304,8 @@ router.post('/otp-send', async (req,res)=> {
         else {
             // Create new OTP
             let otpData = new UserDetailsAccounts({
-                userEmailId: req.body.email,
-                code: otpcode,
+                userEmailId: email,
+                otpCode: otpcode,
             });
             await otpData.save();
         }
@@ -292,10 +326,10 @@ router.post('/otp-send', async (req,res)=> {
             }
         });
       
-        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: req.body.email });
+        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: email });
         let mailOptions = {
             from: 'giribabu8719@gmail.com',
-            to: req.body.email,
+            to: email,
             subject: 'Royal Islamic Bank User Authentication',
             html:
              `  <div>
@@ -312,7 +346,7 @@ router.post('/otp-send', async (req,res)=> {
             let info = await transporter.sendMail(mailOptions);
       
             res.status(200).json(responseType);
-        } 
+        }
         catch (error) {
           console.error(error);
           res.status(500).json({
@@ -326,29 +360,179 @@ router.post('/verify-otp', async (request, response)=> {
     try {
         const email = request.body.email;
         const { gmailOTP } = request.body;
-        
-        const isMailExists = await UserDetailsAccounts.findOne({userEmailId: email})
+        const isMailExists = await UserDetailsAccounts.findOne({userEmailId: email});
         if(isMailExists)
         {
             if(isMailExists.otpCode === gmailOTP){
                 return response.status(200).json({ message: 'OTP verification successful' });
             }
-            else {
+            else{
                 return response.status(400).json({ message: 'Invalid OTP' });
             }
         }
-        
         else{
-            return response.status(400).json({message: 'Email not found'})
+            return response.status(400).json({message: 'Email not found'});
         }
     } 
-  
     catch (error) {
-        console.log(error.message, 'otp verification');
+        console.log(error.message, 'OTP Verification');
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
 
+router.post('/creditcarddetails', async (request, response) => {
+    try {
+        const { userAccountNumber, userCreditCardDetails} = request.body;
+        const isUserExists = await UserDetailsAccounts.findOne({userAccountNumber: userAccountNumber});
+        if(isUserExists){
+            isUserExists.userCreditCardDetails.push(...userCreditCardDetails)
+            await isUserExists.save();
+            return response.status(200).json({message: 'Credit Card Details Added'})
+        }
+        else{
+            return response.status(400).json({message: 'Account not found'})
+        }
+    } 
+    catch (error) {
+        console.log(error);
+        return response.status(500).json({message: 'Internal Server Error at Credit card details'})
+    }
+});
+
+router.get('/creditcarddetails/:accountNumber/:creditCardNum', async (request, response) => {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const creditCardNum = request.params.creditCardNum;
+        const customerDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+        if (customerDetails) {
+            const individualCreditCard = customerDetails.userCreditCardDetails.find(card => card.creditCardNumber === creditCardNum);
+            if (individualCreditCard) {
+                return response.status(200).json(individualCreditCard);
+            } else {
+                return response.status(404).json({ message: 'Credit Card Not Found' });
+            }
+        } else {
+            return response.status(404).json({ message: 'Customer Not Found' });
+        }
+    } catch (error) {
+        console.log(error);
+        return response.status(500).json({ catch: 'Internal Server Error at GET Credit-Card-Details' });
+    }
+});
+
+router.post('/creditcardlimit-otp', async (req,res)=> {
+    try {
+      
+        let otpcode = Math.floor(100000 + Math.random() * 900000);
+        const email = req.body.email
+      
+        const responseType = {};
+    
+        let existingOtp = await UserDetailsAccounts.findOne({ userEmailId: email });
+      
+        if (existingOtp) {
+            existingOtp.otpCode = otpcode;
+            await existingOtp.save();
+        } 
+        else {
+            // Create new OTP
+            let otpData = new UserDetailsAccounts({
+                userEmailId: email,
+                otpCode: otpcode,
+            });
+            await otpData.save();
+        }
+      
+        responseType.statusText = "Success";
+        responseType.message = `OTP is sended to ${email}`;
+      
+          // Send email
+        var nodemailer = require('nodemailer');
+        var transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            service: 'gmail',
+            port: 465,
+            secure: true,
+            auth: {
+              user: "giribabu8719@gmail.com",
+              pass: 'dvfe ptfi maek rneh'
+            }
+        });
+      
+        let otpInfo = await UserDetailsAccounts.findOne({ userEmailId: email });
+        let mailOptions = {
+            from: 'giribabu8719@gmail.com',
+            to: email,
+            subject: 'Royal Islamic Bank Credit Card Limit',
+            html:
+             `  <div>
+                    <p>Dear ${existingOtp.accountHolderName},</p>
+                    <p>
+                        Your OTP is ${otpcode}. Do not share it with anyone by any means. This is confidential and to be used by you only.
+                    </p>
+                    <div>Warm regards,</div>
+                    <div>Royal Islamic Bank (RIB)</div>
+                </div>
+            `
+        };
+      
+            let info = await transporter.sendMail(mailOptions);
+      
+            res.status(200).json(responseType);
+        }
+        catch (error) {
+          console.error(error);
+          res.status(500).json({
+            statusText: "error",
+            message: "Internal Server Error at Credit Card Limit OTP",
+          });
+        }
+});
+
+router.put('/update-domesticcardusage', async (request, response) => {
+    try {
+        const { 
+            accountNumber, creditCardNum, atmTransaction, atmTransactionStatus, onlineTranStatus, 
+            onlineTransaction, merchantStatus, merchantTrans, payTransaction, payTransLimit, cardLimit
+        } = request.body;
+        
+        const isCustomerExist = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+        
+        if (isCustomerExist) {
+            const isCardExist = isCustomerExist.userCreditCardDetails.find(card => card.creditCardNumber === creditCardNum);
+           
+            if (isCardExist) {
+                
+                const limitDifference = parseInt(cardLimit) - parseInt(isCardExist.creditCardLimit);
+                
+                isCardExist.creditCardLimit = cardLimit;
+                isCardExist.availableCreditLimit = parseInt(isCardExist.availableCreditLimit) + limitDifference;
+                isCardExist.atmTransactionLimit = atmTransaction;
+                isCardExist.atmWithdrawlStatus = atmTransactionStatus;
+                isCardExist.onlineTransactionStatus = onlineTranStatus;
+                isCardExist.onlineTransactionLimit = onlineTransaction;
+                isCardExist.merchantOutletStatus = merchantStatus;
+                isCardExist.merchantOutletTransLimit = merchantTrans;
+                isCardExist.tapAndPayStatus = payTransaction;
+                isCardExist.tapAndPayTransLimit = payTransLimit;
+
+                await isCustomerExist.save();
+                
+                return response.status(200).json({ message: "Domestic Credit Card Usage Updated" });
+            } 
+            else{
+                return response.status(400).json({ message: "Credit Card Not Found" });
+            }
+        } 
+        else{
+            return response.status(400).json({ message: "Customer not found" });
+        }
+    } 
+    catch(error){
+        console.log('Error at updating Domestic Card Usage', error);
+        return response.status(500).json({ error: "Internal server error at Domestic Card Usage" });
+    }
+});
 
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {

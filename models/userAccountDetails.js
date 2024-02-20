@@ -27,9 +27,9 @@ const reissueCardSchema = new mongoose.Schema({
 });
 
 
-const userDebitCardPin  = new mongoose.Schema({
-  userDebitcardpin : {type:String },
-  confirmuserDebitcardpin : {type:String},
+const userDebitCardPin = new mongoose.Schema({
+  userDebitcardpin: { type: String },
+  confirmuserDebitcardpin: { type: String },
 })
 
 const userDebitCardDetails = new mongoose.Schema({
@@ -51,6 +51,7 @@ const addressSchema = new mongoose.Schema({
   city: { type: String },
   village: { type: String },
 });
+
 
 const userCreditCardPin  = new mongoose.Schema({
   userCreditcardpin : {type:String },
@@ -75,20 +76,7 @@ const creditcardTransactions = new mongoose.Schema({
 });
 
 
-const customerCreditCardLimitSchema = new mongoose.Schema({
-  creditCardNumber: { type: Number },
-  creditCardLimit: { type: Number },
-  totalAmountDue: { type: Number },
-  currentOutstanding: { type: Number },
-  availableCreditLimit: { type: Number },
-  userCreditCardcvv: { type: Number },
-  userCreditCardExpiryDate: { type: String },
-  userCreditCardStatus: { type: String },
-  userCreditCardPin: userCreditCardPin,
-  autoDebitSetup : { setupAutoDebit: { type: String },
-  autodebitMode: { type: String }
-}
-});
+
 
 const userDetailsAccounts = new mongoose.Schema({
      userAccountNumber: {type: Number},
@@ -114,6 +102,35 @@ const userDetailsAccounts = new mongoose.Schema({
     otp: {type: Number},
     creditCardTransactions : [creditcardTransactions],
     userCreditCardDetails : [customerCreditCardLimitSchema],
+});
+
+
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: String },
+  creditCardLimit: { type: String },
+  totalAmountDue: { type: String },
+  currentOutstanding: { type: String },
+  availableCreditLimit: { type: String },
+  maximumCreditLimit: {type: String},
+  
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  autoDebitSetup : { setupAutoDebit: { type: String },
+  autodebitMode: { type: String },
+
+  atmWithdrawlStatus: {type: Boolean},
+  atmTransactionLimit: {type: String},
+
+  onlineTransactionStatus: {type: Boolean},
+  onlineTransactionLimit: {type: String},
+
+  merchantOutletStatus: {type: Boolean},
+  merchantOutletTransLimit: {type: String},
+
+  tapAndPayStatus: {type: Boolean},
+  tapAndPayTransLimit: {type: String}
 });
 
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
