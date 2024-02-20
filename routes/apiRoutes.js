@@ -2,8 +2,19 @@ const express = require("express");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
-// const AWS = require("aws-sdk")
-const { UserDetailsAccounts } = require('../models/userAccountDetails');
+const AWS = require("aws-sdk")
+const {UserDetailsAccounts} = require('../models/userAccountDetails');
+const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const sendOTP = require('../utils/sendOtp');
+const nodemailer = require('nodemailer');
+const {PayLaterAccount} = require('../models/userAccountDetails');
+const bcrypt = require('bcrypt');
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
+
+
+
 
 
 
@@ -101,26 +112,11 @@ function calculateFinancialYearTax(interestPaid) {
 }
 
 
-
-
-
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
-
-
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
 router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
-
-
-
-
-const Applicants = require('../models/applicant');
-  
-
 
  
 // router.post('/send-OneTP', sendOTP);
@@ -133,10 +129,13 @@ const Applicants = require('../models/applicant');
  
 //
  router.use(express.json());
+
 // 
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
+  
+  )};
 
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -164,9 +163,6 @@ const bcrypt = require('bcrypt');
 
 
 
-router.get("/", (req, res) => {
-    res.send("royal islamic bank server api routes");
-});
 
 
 router.post('/purchase', async (request, response) => {
@@ -538,57 +534,6 @@ router.put('/update-domesticcardusage', async (request, response) => {
     }
 });
 
-
-
-
-// const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
-
-
-router.post('/generate-otp', async (request, response) => {
-    try {
-
-        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
-        if (userDetails) {
-            const generatedOTP = generateOTP();
-            userDetails.otp = generatedOTP;
-            await userDetails.save();
- 
-            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
-
-            return response.status(200).json({ message: 'OTP sent successfully' });
-        } else {
-            return response.status(404).json({ message: 'User not found with the provided account number' });
-        }
-    } catch (error) {
-        console.log(error.message, 'generate PIN and send OTP');
-        return response.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
-router.post('/validate-otp', async (req, res) => {
-    try {
-        const { accountNumber, otp } = req.body;
-
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-
-        if (userDetails && Number(userDetails.otp) === Number(otp)) {
-            userDetails.otp = null;
-            await userDetails.save();
-            return res.status(200).json({ message: 'OTP validated successfully' });
-        } else {
-            console.log('Invalid OTP');
-            return res.status(400).json({ message: 'Invalid OTP' });
-        }
-    } catch (error) {
-        console.error('Error validating OTP:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -624,8 +569,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
-
 
 router.put('/blockCard/:userAccountNumber', async (req, res) => {
     try {
@@ -702,60 +645,6 @@ function generateUniqueSRN() {
     return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
-
-
-
-
-  // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
-
-
-router.post('/generate-otp', async (request, response) => {
-    try {
-
-        const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
-        if (userDetails) {
-            const generatedOTP = generateOTP();
-            userDetails.otp = generatedOTP;
-            await userDetails.save();
- 
-            sendOTP(otpMethod, userDetails.userMobileNumber, userDetails.userEmailId, generatedOTP);
-
-            return response.status(200).json({ message: 'OTP sent successfully' });
-        } else {
-            return response.status(404).json({ message: 'User not found with the provided account number' });
-        }
-    } catch (error) {
-        console.log(error.message, 'generate PIN and send OTP');
-        return response.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
-
-
-router.post('/validate-otp', async (req, res) => {
-    try {
-        const { accountNumber, otp } = req.body;
-
-        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-
-        if (userDetails && Number(userDetails.otp) === Number(otp)) {
-            userDetails.otp = null;
-            await userDetails.save();
-            return res.status(200).json({ message: 'OTP validated successfully' });
-        } else {
-            console.log('Invalid OTP');
-            return res.status(400).json({ message: 'Invalid OTP' });
-        }
-    } catch (error) {
-        console.error('Error validating OTP:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
 // updating domestic limits
 router.put('/updateDomesticLimits/:accountNumber', async (request, response) => {
     try {
@@ -802,9 +691,6 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
       return response.status(500).json({ message: 'Internal Server Error' });
     }
   });
-
-
-
 
 
 const addPayLater=async()=>{
@@ -882,6 +768,7 @@ router.post('/quickFundTransfer', async (req, res) => {
     }
 });
 
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -911,8 +798,6 @@ router.post('/generate-otp', async (request, response) => {
 
         const { accountNumber, debitCardNumber, cvv, mobileNumber, otpMethod } = request.body;
         const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
-        console.log(userDetails,otpMethod)
-
         if (userDetails) {
             const generatedOTP = generateOTP();
             userDetails.otp = generatedOTP;
@@ -950,7 +835,7 @@ router.post('/validate-otp', async (req, res) => {
     }
 });
 
-})
+
 router.put('/payLaterAccount/pay', async (req, res) => {
     const { accountNumber } = req.body;
   
@@ -1065,8 +950,6 @@ router.post('/fdformdetails', async (request, response)=> {
 });
 
 
-
-
 router.post('/rdformdetails', async (request, response)=> {
     try {
         const { 
@@ -1163,12 +1046,10 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
         const userDetails = await UserDetailsAccounts.findOne({userAccountNumber: accountNumber});
         
         if (userDetails) {
-            return response.status(200).json({ details: userDetails,});
-          
+            return response.status(200).json({ details: userDetails,}); 
         } 
         else if (selectedUser && selectedUser.accountHolderPAN !== accountHolderPAN) {
-          return response.status(400).json({ message: 'PAN number does not match with the account holder'});
-         
+          return response.status(400).json({ message: 'PAN number does not match with the account holder'});   
         }
        
         else {
@@ -1184,17 +1065,8 @@ router.get('/userDetails/:accountNumber', async (request, response)=> {
     }
 })
 
-
-
-
-
-
-
-
  
 router.post('/submitForm', inwardController.submitForm);
- 
-   
 
 
 
@@ -1251,6 +1123,148 @@ router.post('/fastagRecharge', async (request, response) => {
         return response.status(500).json({ error: 'Internal Server Error at Fastag Recharge' });
     }
    
+});
+
+
+
+router.post('/updateCreditCardTransactions', async (request, response) => {
+    try {
+        const { userAccountNumber, transactions } = request.body;
+
+        const user = await UserDetailsAccounts.findOne({ userAccountNumber });
+
+        if (user) {
+            if (!user.creditCardTransactions) {
+                user.creditCardTransactions = [];
+            }
+            user.creditCardTransactions.push(...transactions);
+
+            await user.save();
+
+            return response.status(200).json({ message: 'Credit card transactions updated successfully' });
+        } else {
+            return response.status(404).json({ message: 'User account not found' });
+        }
+    } catch (error) {
+        console.error(error.message, 'update-credit-card-transactions');
+        return response.status(500).json({ message: 'Internal Server Error at Credit Card Transactions Update' });
+    }
+});
+
+
+router.put('/userDetails/:accountNumber/emiConversion', async (request, response) => {
+    try {
+        const accountNumber = request.params.accountNumber;
+        const { emiTenure, transactions, totalProcessingFee, totalEMIAmount,emi, isChecked } = request.body;
+
+        if (!transactions || !Array.isArray(transactions)) {
+            return response.status(400).json({ message: 'Transactions array is missing or invalid' });
+        }
+
+        const userDetails = await UserDetailsAccounts.findOne({ userAccountNumber: accountNumber });
+
+        if (!userDetails) {
+            return response.status(404).json({ message: 'User not found with the provided account number' });
+        }
+
+        for (const transaction of transactions) {
+            const transactionId = transaction._id;
+            
+            const selectedTransaction = userDetails.creditCardTransactions.find(t => t._id.toString() === transactionId);
+            if (selectedTransaction) {
+                const newEmiConversion = {
+                    emiTenure,
+                    processingFee: totalProcessingFee,
+                    totalEmi: totalEMIAmount,
+                    emi,
+                    isChecked,
+                    createdAt: new Date()
+                };
+
+                selectedTransaction.convertToEMI.push(newEmiConversion);
+            }
+        }
+
+        await userDetails.save();
+
+        return response.status(201).json({ message: 'EMI conversion added successfully', details: userDetails });
+    } catch (error) {
+        console.error(error.message, 'Error adding EMI conversion');
+        return response.status(500).json({ message: 'Internal Server Error at EMI Conversion API' });
+    }
+});
+
+
+
+router.post('/autodebit/yes', async (req, res) => {
+    try {
+        const { selectedCreditCard, selectedAccount, autodebitMode, setupAutoDebit } = req.body;
+       
+        if (!selectedCreditCard || !selectedAccount || !autodebitMode || !setupAutoDebit) {
+            return res.status(400).json({ error: 'Missing fields in request body' });
+        }
+
+        const userAccount = await UserDetailsAccounts.findOne({ userAccountNumber: selectedAccount });
+
+        if (!userAccount) {
+            return res.status(404).json({ error: 'User account not found' });
+        }
+
+        if (setupAutoDebit === 'yes') {
+
+            if (!userAccount.userCreditCardDetails.autoDebitSetup) {
+                userAccount.userCreditCardDetails.autoDebitSetup = [];
+            }
+
+            const existingSetup = userAccount.userCreditCardDetails.autoDebitSetup.find(setup => setup.setupAutoDebit === 'yes');
+            if (existingSetup) {
+                userAccount.userCreditCardDetails.autoDebitSetup = userAccount.userCreditCardDetails.autoDebitSetup.filter(setup => setup.setupAutoDebit !== 'yes');
+            }
+
+            userAccount.userCreditCardDetails.autoDebitSetup.push({ autodebitMode, setupAutoDebit });
+
+            await userAccount.save();
+
+            res.status(200).json({ message: 'Data posted successfully.' });
+        } else {
+            res.status(400).json({ error: 'Invalid value for setupAutoDebit when processing "yes".' });
+        }
+    } catch (error) {
+        console.error('Error posting data:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
+
+// Route for deleting data when setupAutoDebit is 'no'
+router.post('/autodebit/no', async (req, res) => {
+    try {
+        const { selectedCreditCard, selectedAccount, setupAutoDebit } = req.body;
+
+        if (!selectedCreditCard || !selectedAccount || !setupAutoDebit) {
+            return res.status(400).json({ error: 'Missing fields in request body' });
+        }
+
+        const userAccount = await UserDetailsAccounts.findOne({ userAccountNumber: selectedAccount });
+
+        if (!userAccount) {
+            return res.status(404).json({ error: 'User account not found' });
+        }
+
+        if (setupAutoDebit === 'no') {
+
+            userAccount.userCreditCardDetails.autoDebitSetup = [];
+            
+            await userAccount.save();
+
+            res.status(200).json({ message: 'Data deleted successfully.' });
+        } else {
+            res.status(400).json({ error: 'Invalid value for setupAutoDebit when processing "no".' });
+        }
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
 });
 
 

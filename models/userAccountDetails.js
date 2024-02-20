@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 
-
-const transactionSchema = new mongoose.Schema({
+const debitCardTransactions = new mongoose.Schema({
   date: String,
   description: String,
   withdrawal: Number,
   deposit: Number,
   balance: Number,
 });
-
 
 const domesticLimitSchema = new mongoose.Schema({
   cashWithdrawalLimit: { type: Number, default: 0 },
@@ -24,9 +22,6 @@ const internationalLimitSchema = new mongoose.Schema({
   contactlessPaymentLimit: { type: Number, default: 0 },
 });
 
-
-
-
 const reissueCardSchema = new mongoose.Schema({
   srn: { type: String, unique: true }
 });
@@ -37,22 +32,16 @@ const userDebitCardPin = new mongoose.Schema({
   confirmuserDebitcardpin: { type: String },
 })
 
-
-
 const userDebitCardDetails = new mongoose.Schema({
   userDebitCardNumber: { type: Number },
   userDebitCardcvv: { type: Number },
-
   userDebitCardExpiryDate: { type: String },
-  userDebitCardStatus: { type: Boolean },
+  userDebitCardStatus: { type: String },
   userDebitCardPin: userDebitCardPin,
   domesticLimits: domesticLimitSchema,
   internationalLimits: internationalLimitSchema,
+  reissueCard : reissueCardSchema
 });
-
-
-
-
 
 
 const addressSchema = new mongoose.Schema({
@@ -63,6 +52,59 @@ const addressSchema = new mongoose.Schema({
   village: { type: String },
 });
 
+
+const userCreditCardPin  = new mongoose.Schema({
+  userCreditcardpin : {type:String },
+  confirmuserCreditcardpin : {type:String},
+})
+
+const emiConversionSchema = new mongoose.Schema({
+  emiTenure: { type: Number },
+  processingFee: { type: Number },
+  emi: { type: Number },
+  totalEmi : {type:Number},
+  isChecked: { type: Boolean },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const creditcardTransactions = new mongoose.Schema({
+  date: { type: Date },
+  Referencenumber: { type: Number },
+  transactionDetails: { type: String },
+  transactionAmount: { type: Number },
+  convertToEMI: [emiConversionSchema]
+});
+
+
+
+
+const userDetailsAccounts = new mongoose.Schema({
+     userAccountNumber: {type: Number},
+    accountHolderName: {type: String},
+    bankBranchName: {type: String},
+    userAccountType: {type: String},
+    userDateOfBirth: {type: String},
+    userEmailId: {type: String},
+    userMobileNumber: {type: String},
+    otpCode: {type: String},
+    accountHolderPAN: {type: String},
+    bankBranchIfscCode : {type: String},   
+    firstName: { type: String },
+    lastName: { type: String },
+    address: {
+        street: { type: String },
+        city: { type: String },
+        zipCode: { type: String }},
+    accountHolderAddress: { type: addressSchema, default: {} },
+    userAccountBalance: { type: Number },
+    userDebitCardDetails: userDebitCardDetails,
+    debitCardtransactions: [debitCardTransactions],
+    otp: {type: Number},
+    creditCardTransactions : [creditcardTransactions],
+    userCreditCardDetails : [customerCreditCardLimitSchema],
+});
+
+
 const customerCreditCardLimitSchema = new mongoose.Schema({
   creditCardNumber: { type: String },
   creditCardLimit: { type: String },
@@ -70,6 +112,13 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   currentOutstanding: { type: String },
   availableCreditLimit: { type: String },
   maximumCreditLimit: {type: String},
+  
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  autoDebitSetup : { setupAutoDebit: { type: String },
+  autodebitMode: { type: String },
 
   atmWithdrawlStatus: {type: Boolean},
   atmTransactionLimit: {type: String},
@@ -84,34 +133,6 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   tapAndPayTransLimit: {type: String}
 });
 
-const userDetailsAccounts = new mongoose.Schema({
-  userAccountNumber: { type: Number },
-  accountHolderName: { type: String },
-  bankBranchName: { type: String },
-  userAccountType: { type: String },
-  userDateOfBirth: { type: String },
-  userEmailId: { type: String },
-  userMobileNumber: { type: String },
-  otpCode: { type: String },
-  accountHolderPAN: { type: String },
-  bankBranchIfscCode: { type: String },
-  userCreditCardDetails: [customerCreditCardLimitSchema],
-
-
-  firstName: { type: String },
-  lastName: { type: String },
-  address: {
-    street: { type: String },
-    city: { type: String },
-    // Add more address details if necessary
-    zipCode: { type: String }
-  },
-
-  accountHolderAddress: {type: String},
-  userAccountBalance: { type: String },
-  userDebitCardDetails: userDebitCardDetails,
-  otp: { type: Number }
-});
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
 
