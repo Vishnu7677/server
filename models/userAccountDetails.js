@@ -14,18 +14,18 @@ const creditcardTransactions = new mongoose.Schema({
   convertToEMI : {type : Boolean}
 })
 
-const customerCreditCardLimitSchema = new mongoose.Schema({
-  creditCardNumber: { type: Number },
-  creditCardLimit: { type: Number },
-  totalAmountDue: { type: Number },
-  currentOutstanding: { type: Number },
-  availableCreditLimit: { type: Number },
-  userCreditCardcvv: { type: Number },
-  userCreditCardExpiryDate: { type: String },
-  userCreditCardStatus: { type: String },
-  userCreditCardPin: userCreditCardPin,
-  transactions : [creditcardTransactions]
-});
+// const customerCreditCardLimitSchema = new mongoose.Schema({
+//   creditCardNumber: { type: Number },
+//   creditCardLimit: { type: Number },
+//   totalAmountDue: { type: Number },
+//   currentOutstanding: { type: Number },
+//   availableCreditLimit: { type: Number },
+//   userCreditCardcvv: { type: Number },
+//   userCreditCardExpiryDate: { type: String },
+//   userCreditCardStatus: { type: String },
+//   userCreditCardPin: userCreditCardPin,
+//   transactions : [creditcardTransactions]
+// });
 
 
 const transactionSchema = new mongoose.Schema({
@@ -83,10 +83,7 @@ const addressSchema = new mongoose.Schema({
 });
 
 
-const userCreditCardPin  = new mongoose.Schema({
-  userCreditcardpin : {type:String },
-  confirmuserCreditcardpin : {type:String},
-})
+
 
 const emiConversionSchema = new mongoose.Schema({
   emiTenure: { type: Number },
@@ -97,13 +94,7 @@ const emiConversionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const creditcardTransactions = new mongoose.Schema({
-  date: { type: Date },
-  Referencenumber: { type: Number },
-  transactionDetails: { type: String },
-  transactionAmount: { type: Number },
-  convertToEMI: [emiConversionSchema]
-});
+
 
 const customerCreditCardLimitSchema = new mongoose.Schema({
   creditCardNumber: { type: String },
