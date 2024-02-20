@@ -1,53 +1,36 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
-
-const path = require("path");
-
+// const path = require("path");
 const dbConfig = require('./utils/dbConfig');
-// sairam inwardremitance code starts
+// // sairam inwardremitance code starts
 const apiRoutes = require('./routes/apiRoutes')
-// sairam inwardremitance code ends
+// // sairam inwardremitance code ends
 const dotenv = require('dotenv');
-
-
-
 // 
 const bodyParser = require('body-parser');
 require('dotenv').config();
   
-// 
+// // 
 const { sendOTP, verifyOTP } = require('./controllers/otpController');
 
-// app.use('/api/auth', authRoutes);
- 
-
-
-
+// // app.use('/api/auth', authRoutes);
 const {UserDetailsAccounts} = require("./models/userAccountDetails");
-
-
-
-
-
 const app = express();
 const port = 4444 || process.env.PORT
-
-
 // 
 app.use(bodyParser.json());
 // 
 app.use(cors()) ;
 app.use(express.json());
-require('dotenv').config()
+// require('dotenv').config()
 // scheduled starts 
 app.use(bodyParser.urlencoded({ extended: false }));
 // scheduled ends
 
 mongoose.connect(dbConfig, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true ,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true ,
     
   })
 .then(()=>console.log('DB Connected'))
@@ -55,9 +38,9 @@ mongoose.connect(dbConfig, {
 
 // 
 
-  // inward remittance sched starts 
-  const inwardRemittanceRoutes = require('./routes/apiRoutes');
-  app.use('/api', inwardRemittanceRoutes);
+//   // inward remittance sched starts 
+//   const inwardRemittanceRoutes = require('./routes/apiRoutes');
+//   app.use('/api', inwardRemittanceRoutes);
 
   app.use('/api', apiRoutes);
 // inward remittance sched ends 
