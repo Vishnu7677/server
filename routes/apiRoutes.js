@@ -13,7 +13,8 @@ router.post('/validate-aadhaar', async (req, res) => {
   
     if (!aadhaarNumber) {
       return res.status(400).json({ error: 'Aadhaar number is required.' });
-    }
+        //  return res.status(400).json({ error: 'Aadhaar number is required.' });
+}
   
     const encodedParams = new URLSearchParams();
     encodedParams.set('txn_id', '17c6fa41-778f-49c1-a80a-cfaf7fae2fb8');
@@ -40,7 +41,8 @@ router.post('/validate-aadhaar', async (req, res) => {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+}
+);
  
 // Aadhar
 
