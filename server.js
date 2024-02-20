@@ -84,35 +84,3 @@ app.listen(port, ()=>console.log(`Server Running at ${port}`));
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-// inward remittance sched starts
-// const inwardRemittanceRoutes = require("./routes/apiRoutes");
-// app.use("/api", inwardRemittanceRoutes);
-
-// app.use('/api', apiRoutes);
-// inward remittance sched ends
-//
-
-// app.post("/api/send", sendOTP);
-// app.post("/api/verify", verifyOTP);
- 
- 

@@ -59,15 +59,7 @@ router.post('/validate-aadhaar', async (req, res) => {
  
 // Aadhar
 
-// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-// const sendOTP = require('../utils/sendOtp');
-// const nodemailer = require('nodemailer');
-// const {PayLaterAccount} = require('../models/userAccountDetails');
-// const bcrypt = require('bcrypt');
-// const inwardController = require('../controllers/inwardController');
-// const paymentTransactionController = require('../controllers/paymentController');
-// const transferTransactionController = require('../controllers/transferController');
-
+ 
 
 
 
