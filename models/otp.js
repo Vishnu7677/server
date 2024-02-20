@@ -15,6 +15,6 @@ const userOTPSchema = new mongoose.Schema({
 });
 
 // Define model
-const UserOTP = mongoose.model('UserOTP', userOTPSchema);
+const TaxcenterOTP = mongoose.model('TaxcenterOTP', userOTPSchema);
 
-module.exports = UserOTP;
+module.exports = TaxcenterOTP;
