@@ -130,39 +130,6 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 //
  router.use(express.json());
 
-// 
-
-router.get("/",(req,res)=>{
-    res.send("royal islamic bank server api routes")
-  
-  )};
-
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
-
-
-const nodemailer = require('nodemailer');
-
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
-
-
-
-
-const {PayLaterAccount} = require('../models/userAccountDetails');
-
-
-
-
-
-
-const bcrypt = require('bcrypt');
-
-
-
-
-
-
-
 
 
 router.post('/purchase', async (request, response) => {
@@ -211,7 +178,6 @@ router.post('/purchase', async (request, response) => {
     }
   
 });
-
 
 
 router.post('/customerAccountCreation', async (request, response) => {

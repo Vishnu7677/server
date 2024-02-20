@@ -75,7 +75,33 @@ const creditcardTransactions = new mongoose.Schema({
   convertToEMI: [emiConversionSchema]
 });
 
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: String },
+  creditCardLimit: { type: String },
+  totalAmountDue: { type: String },
+  currentOutstanding: { type: String },
+  availableCreditLimit: { type: String },
+  maximumCreditLimit: {type: String},
+  
+  userCreditCardcvv: { type: Number },
+  userCreditCardExpiryDate: { type: String },
+  userCreditCardStatus: { type: String },
+  userCreditCardPin: userCreditCardPin,
+  autoDebitSetup : { setupAutoDebit: { type: String },
+  autodebitMode: { type: String },
+  },
+  atmWithdrawlStatus: {type: Boolean},
+  atmTransactionLimit: {type: String},
 
+  onlineTransactionStatus: {type: Boolean},
+  onlineTransactionLimit: {type: String},
+
+  merchantOutletStatus: {type: Boolean},
+  merchantOutletTransLimit: {type: String},
+
+  tapAndPayStatus: {type: Boolean},
+  tapAndPayTransLimit: {type: String}
+});
 
 
 const userDetailsAccounts = new mongoose.Schema({
@@ -105,33 +131,7 @@ const userDetailsAccounts = new mongoose.Schema({
 });
 
 
-const customerCreditCardLimitSchema = new mongoose.Schema({
-  creditCardNumber: { type: String },
-  creditCardLimit: { type: String },
-  totalAmountDue: { type: String },
-  currentOutstanding: { type: String },
-  availableCreditLimit: { type: String },
-  maximumCreditLimit: {type: String},
-  
-  userCreditCardcvv: { type: Number },
-  userCreditCardExpiryDate: { type: String },
-  userCreditCardStatus: { type: String },
-  userCreditCardPin: userCreditCardPin,
-  autoDebitSetup : { setupAutoDebit: { type: String },
-  autodebitMode: { type: String },
 
-  atmWithdrawlStatus: {type: Boolean},
-  atmTransactionLimit: {type: String},
-
-  onlineTransactionStatus: {type: Boolean},
-  onlineTransactionLimit: {type: String},
-
-  merchantOutletStatus: {type: Boolean},
-  merchantOutletTransLimit: {type: String},
-
-  tapAndPayStatus: {type: Boolean},
-  tapAndPayTransLimit: {type: String}
-});
 
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
 
