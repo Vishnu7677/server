@@ -63,6 +63,27 @@ const addressSchema = new mongoose.Schema({
   village: { type: String },
 });
 
+const customerCreditCardLimitSchema = new mongoose.Schema({
+  creditCardNumber: { type: String },
+  creditCardLimit: { type: String },
+  totalAmountDue: { type: String },
+  currentOutstanding: { type: String },
+  availableCreditLimit: { type: String },
+  maximumCreditLimit: {type: String},
+
+  atmWithdrawlStatus: {type: Boolean},
+  atmTransactionLimit: {type: String},
+
+  onlineTransactionStatus: {type: Boolean},
+  onlineTransactionLimit: {type: String},
+
+  merchantOutletStatus: {type: Boolean},
+  merchantOutletTransLimit: {type: String},
+
+  tapAndPayStatus: {type: Boolean},
+  tapAndPayTransLimit: {type: String}
+});
+
 const userDetailsAccounts = new mongoose.Schema({
   userAccountNumber: { type: Number },
   accountHolderName: { type: String },
@@ -74,6 +95,8 @@ const userDetailsAccounts = new mongoose.Schema({
   otpCode: { type: String },
   accountHolderPAN: { type: String },
   bankBranchIfscCode: { type: String },
+  userCreditCardDetails: [customerCreditCardLimitSchema],
+
 
   firstName: { type: String },
   lastName: { type: String },
@@ -84,30 +107,12 @@ const userDetailsAccounts = new mongoose.Schema({
     zipCode: { type: String }
   },
 
-  accountHolderAddress: addressSchema,
+  accountHolderAddress: {type: String},
   userAccountBalance: { type: String },
   userDebitCardDetails: userDebitCardDetails,
   otp: { type: Number }
 });
 const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAccounts);
-
-
-const customerCreditCardLimitSchema = new mongoose.Schema({
-  creditCardNumber: { type: String },
-  creditCardLimit: { type: String },
-  totalAmountDue: { type: String },
-  currentOutstanding: { type: String },
-  availableCreditLimit: { type: String }
-});
-const creditCardLimitSchema = new mongoose.Schema({
-  customerAccountNumber: {type: String},
-  customerName: {type: String},
-  customerMailId: {type: String},
-  customerMobileNumber: {type: String},
-  customerCreditCardLimit: [customerCreditCardLimitSchema]
-});
-const CustomerCreditCardDetails = mongoose.model('CustomerCreditCardDetails', creditCardLimitSchema);
-
 
 
 const payLaterAccount = new mongoose.Schema({
@@ -127,4 +132,4 @@ const payLaterAccount = new mongoose.Schema({
 });
 const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 
-module.exports = { UserDetailsAccounts, PayLaterAccount, CustomerCreditCardDetails };
+module.exports = { UserDetailsAccounts, PayLaterAccount };
