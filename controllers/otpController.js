@@ -5,7 +5,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = new twilio(accountSid, authToken);
 
-const generateOTP = async (req, res) => {
+const generatedOTP = async (req, res) => {
   try {
     const mobileNumber = '+916300223779'; // Fixed mobile number, include country code
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -79,7 +79,7 @@ const TaxverifyOTP = async (req, res) => {
 };
 
 
-module.exports = { generateOTP, resendOTP, TaxverifyOTP };
+module.exports = { generatedOTP, resendOTP, TaxverifyOTP };
 
 
 

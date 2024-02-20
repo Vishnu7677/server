@@ -26,7 +26,8 @@ router.post('/validate-aadhaar', async (req, res) => {
   
     if (!aadhaarNumber) {
       return res.status(400).json({ error: 'Aadhaar number is required.' });
-    }
+        //  return res.status(400).json({ error: 'Aadhaar number is required.' });
+}
   
     const encodedParams = new URLSearchParams();
     encodedParams.set('txn_id', '17c6fa41-778f-49c1-a80a-cfaf7fae2fb8');
@@ -53,18 +54,19 @@ router.post('/validate-aadhaar', async (req, res) => {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+}
+);
  
 // Aadhar
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
-const nodemailer = require('nodemailer');
-const {PayLaterAccount} = require('../models/userAccountDetails');
-const bcrypt = require('bcrypt');
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
+// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+// const sendOTP = require('../utils/sendOtp');
+// const nodemailer = require('nodemailer');
+// const {PayLaterAccount} = require('../models/userAccountDetails');
+// const bcrypt = require('bcrypt');
+// const inwardController = require('../controllers/inwardController');
+// const paymentTransactionController = require('../controllers/paymentController');
+// const transferTransactionController = require('../controllers/transferController');
 
 
 
@@ -171,12 +173,12 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
-const Applicants = require('../models/applicant');
-const { TaxverifyOTP, generateOTP, resendOTP   } = require("../controllers/otpController");
+// const Applicants = require('../models/applicant');
+const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
   
 
 
-router.post('/api/generate-otp ', generateOTP);
+router.post('/api/generated-otp ', generatedOTP);
 router.post('/api/resend-otp ',  resendOTP);
 // router.post('/send-OneTP', TaxsendOTP);
 router.post('/api/verify-OneTP', TaxverifyOTP);
@@ -230,6 +232,7 @@ router.post('/purchase', async (request, response) => {
             vehicleMake,
             vehicleModel,
             customerDetails: userDetails._id,
+        
         });
 
         await newApplicant.save();

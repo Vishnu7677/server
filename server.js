@@ -21,11 +21,10 @@ require("dotenv").config();
   
 // 
 // const {TaxsendOTP, TaxverifyOTP } = require('./controllers/otpController');
-const {generateOTP, resendOTP, TaxverifyOTP } = require('./controllers/otpController');
+const {generatedOTP, resendOTP, TaxverifyOTP } = require('./controllers/otpController');
 
 //
-const { sendOTP, verifyOTP } = require("./controllers/otpController");
-
+ 
 
 // app.use('/api/auth', authRoutes);
 
@@ -36,7 +35,7 @@ const port = 4444 || process.env.PORT;
 
 //
 app.use(bodyParser.json());
-
+ 
 //
 app.use(cors());
 app.use(express.json());
@@ -67,7 +66,7 @@ mongoose
 // 
 
 
-app.post('/api/generate-otp', generateOTP );
+app.post('/api/generated-otp', generatedOTP );
 app.post('/api/resend-otp', resendOTP );
 
 // app.post('/api/send-OneTP', TaxsendOTP);
@@ -106,20 +105,14 @@ app.listen(port, ()=>console.log(`Server Running at ${port}`));
 //
 
 // inward remittance sched starts
-const inwardRemittanceRoutes = require("./routes/apiRoutes");
-app.use("/api", inwardRemittanceRoutes);
+// const inwardRemittanceRoutes = require("./routes/apiRoutes");
+// app.use("/api", inwardRemittanceRoutes);
 
 // app.use('/api', apiRoutes);
 // inward remittance sched ends
 //
 
-app.post("/api/send", sendOTP);
-app.post("/api/verify", verifyOTP);
-
-app.use("/auth", require("./routes/authRoutes"));
-app.use("/api", require("./routes/apiRoutes"));
-app.use("/api", require("./routes/userAccounts"));
-
-app.use("/form60Userdetails", require("./routes/form60routes"));
-
-app.listen(port, () => console.log(`Server Running at ${port}`));
+// app.post("/api/send", sendOTP);
+// app.post("/api/verify", verifyOTP);
+ 
+ 
