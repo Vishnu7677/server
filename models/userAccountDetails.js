@@ -213,6 +213,7 @@ const userDetailsAccountsSchema = new mongoose.Schema({
 
 
 
+
 module.exports = {UserDetailsAccounts,PayLaterAccount};
 
 
