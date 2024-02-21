@@ -231,9 +231,8 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
+//  const paymentTransactionController = require('../controllers/paymentController');
+// const transferTransactionController = require('../controllers/transferController');
 
 
 
@@ -278,27 +277,15 @@ router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 })
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
+//  const sendOTP = require('../utils/sendOtp');
 
 
-const nodemailer = require('nodemailer');
-
+ 
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
-
-
-const {PayLaterAccount} = require('../models/userAccountDetails');
-
-
-
-
-
-
-const bcrypt = require('bcrypt');
-
+ 
 
 
 

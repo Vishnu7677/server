@@ -203,11 +203,11 @@ const userDetailsAccountsSchema = new mongoose.Schema({
 
 
    
-  });
+  // });
  
-  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  // const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
   
-  module.exports = { UserDetailsAccounts, PayLaterAccount };
+  // module.exports = { UserDetailsAccounts, PayLaterAccount };
   
 
 
