@@ -5,7 +5,9 @@ const fs = require("fs");
 const AWS = require("aws-sdk")
 
 
+
  const {generateForm16ASchema} = require('../models/userAccountDetails');
+
 
 
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
@@ -17,6 +19,9 @@ const bcrypt = require('bcrypt');
 const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
+
+const axios = require('axios');
+
 
 const { sendEmail } = require("../emailServiecs");
 
@@ -67,6 +72,26 @@ router.post('/validate-aadhaar', async (req, res) => {
 
 
 
+router.get('/panValid/:panNumber', async (req, res) => {
+    const {panNumber} = req.params
+
+    const options = {
+      method: 'GET',
+      url: `https://pan-card-verification-at-lowest-price.p.rapidapi.com/verifyPan/${panNumber}`,
+      headers: {
+        'x-rapid-api': 'rapid-api-database',
+        'X-RapidAPI-Key': '99dd840abdmshd183db508cdec97p19a7f3jsnac9961b49d13',
+        'X-RapidAPI-Host': 'pan-card-verification-at-lowest-price.p.rapidapi.com'
+      }
+    };
+    
+    try {
+        const response = await axios.request(options);
+        return res.status(200).json({data:response.data})
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 router.post("/generateCertificate", async (request, response) => {
   try {
@@ -161,9 +186,6 @@ function calculateFinancialYearTax(interestPaid) {
 
 
 
- 
-
-
 router.post('/generatePDF', async (req, res) => {
     try {
         const { financialYear, quarter } = req.body;
@@ -231,8 +253,9 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-//  const paymentTransactionController = require('../controllers/paymentController');
-// const transferTransactionController = require('../controllers/transferController');
+const inwardController = require('../controllers/inwardController');
+const paymentTransactionController = require('../controllers/paymentController');
+const transferTransactionController = require('../controllers/transferController');
 
 
 
@@ -247,7 +270,7 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
-// const Applicants = require('../models/applicant');
+
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
   
@@ -258,24 +281,22 @@ router.post('/api/resend-otp ',  resendOTP);
 // router.post('/send-OneTP', TaxsendOTP);
 router.post('/api/verify-OneTP', TaxverifyOTP);
 
- 
-// router.post('/send-OneTP', sendOTP);
-// router.post('/verify-OneTP', verifyOTP);
-
-
-// scheduled ends
-//   
-// 
 
  
-//
+
+
+ 
+
  router.use(express.json());
 
-// 
+
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 })
+
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 
 //  const sendOTP = require('../utils/sendOtp');
 
@@ -287,6 +308,16 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
  
 
+const {PayLaterAccount} = require('../models/userAccountDetails');
+
+
+
+
+
+
+const bcrypt = require('bcrypt');
+
+
 
 
 
@@ -296,8 +327,6 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 router.post('/purchase', async (request, response) => {
     try {
-
-         
 
         const {
             vehicleRegNum, vehicleMake, vehicleModel,
@@ -688,6 +717,7 @@ router.put('/update-domesticcardusage', async (request, response) => {
 
 
 
+
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -723,7 +753,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
 
 
 
@@ -928,6 +957,7 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
 
 
 
+
 const addPayLater=async()=>{
     try {
         const payLater = new PayLaterAccount({
@@ -1083,6 +1113,7 @@ router.post('/debit-notification', async (req, res) => {
 });
 
 
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -1161,12 +1192,15 @@ router.put('/payLaterAccount/pay', async (req, res) => {
       if (!payLaterAccount) {
         return res.status(404).json({ message: 'PayLater account not found' });
       }
-      payLaterAccount.utilisedLimit = 0;
-      payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
-      payLaterAccount.dueDate = '';
-      await payLaterAccount.save();
-  
-      return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     if(payLaterAccount.totalAmountPayable>0){
+        payLaterAccount.utilisedLimit = 0;
+        payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
+        payLaterAccount.dueDate = '';
+        payLaterAccount.totalAmountPayable = 0;
+        await payLaterAccount.save();
+    
+        return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     }
     } catch (e) {
       console.log(e, 'payLaterAPI');
   
@@ -1442,6 +1476,7 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
 
 
 
@@ -1782,5 +1817,5 @@ router.post('/autodebit/no', async (req, res) => {
 
 
 
-module.exports = router;
 
+module.exports = router;
