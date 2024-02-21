@@ -199,8 +199,22 @@ const userDetailsAccountsSchema = new mongoose.Schema({
   vehicleRegistrationNumber: String,
   rechargeAmount: Number,
   debitAccount: String
-});  
+
+});
+
+
+   
+  });
+ 
+  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  
+  module.exports = { UserDetailsAccounts, PayLaterAccount };
+  
 
 
 
-module.exports = { UserDetailsAccounts, PayLaterAccount };
+
+
+
+
+
