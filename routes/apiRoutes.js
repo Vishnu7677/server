@@ -3,13 +3,7 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
-
-
-
- const {generateForm16ASchema} = require('../models/userAccountDetails');
-
-
-
+const {generateForm16ASchema} = require('../models/userAccountDetails');
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -19,15 +13,10 @@ const bcrypt = require('bcrypt');
 const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
-
 const axios = require('axios');
-
-
 const { sendEmail } = require("../emailServiecs");
+const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
-
-
-const axios = require('axios');
 
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
@@ -66,19 +55,6 @@ router.post('/validate-aadhaar', async (req, res) => {
 }
 );
  
-// Aadhar
-
-// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-// const sendOTP = require('../utils/sendOtp');
-// const nodemailer = require('nodemailer');
-// const {PayLaterAccount} = require('../models/userAccountDetails');
-// const bcrypt = require('bcrypt');
-// const inwardController = require('../controllers/inwardController');
-// const paymentTransactionController = require('../controllers/paymentController');
-// const transferTransactionController = require('../controllers/transferController');
-
-
-
 
 router.get('/panValid/:panNumber', async (req, res) => {
     const {panNumber} = req.params
@@ -254,33 +230,11 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
 router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
-
-
-
-
-
-
-
-const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
-
-  
 
 
 router.post('/api/generated-otp ', generatedOTP);
@@ -289,47 +243,8 @@ router.post('/api/resend-otp ',  resendOTP);
 router.post('/api/verify-OneTP', TaxverifyOTP);
 
 
- 
 
-
- 
-
- router.use(express.json());
-
-
-
-router.get("/",(req,res)=>{
-    res.send("royal islamic bank server api routes")
-
-
-
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
-
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
-
-
-const nodemailer = require('nodemailer');
-
-
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
-
-
-
-
-const {PayLaterAccount} = require('../models/userAccountDetails');
-
-
-
-
-
-
-const bcrypt = require('bcrypt');
-
-
-
-
-
+router.use(express.json());
 
 
 
