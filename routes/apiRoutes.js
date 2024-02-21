@@ -261,9 +261,7 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
+
 
 
 
@@ -280,7 +278,6 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
-// const Applicants = require('../models/applicant');
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
   
@@ -293,23 +290,20 @@ router.post('/api/verify-OneTP', TaxverifyOTP);
 
 
  
-// router.post('/send-OneTP', sendOTP);
-// router.post('/verify-OneTP', verifyOTP);
 
-
-// scheduled ends
-//   
-// 
 
  
-//
+
  router.use(express.json());
 
-// 
+
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 
+
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 
 const {Applicants,QuickFundTransferModel} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -341,8 +335,6 @@ const bcrypt = require('bcrypt');
 
 router.post('/purchase', async (request, response) => {
     try {
-
-         
 
         const {
             vehicleRegNum, vehicleMake, vehicleModel,
