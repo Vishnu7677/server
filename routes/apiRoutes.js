@@ -151,26 +151,26 @@ router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 });
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
+// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+// const sendOTP = require('../utils/sendOtp');
 
 
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 
-const UserDetailsAccounts = require('../models/userAccountDetails');
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
-
-
-
-
-const {PayLaterAccount} = require('../models/userAccountDetails');
+// const UserDetailsAccounts = require('../models/userAccountDetails');
+// const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
 
+// const {PayLaterAccount} = require('../models/userAccountDetails');
 
 
-const bcrypt = require('bcrypt');
+
+
+
+
+// const bcrypt = require('bcrypt');
 
 
 
