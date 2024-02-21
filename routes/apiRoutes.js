@@ -305,11 +305,12 @@ router.get("/",(req,res)=>{
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
+// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+// const sendOTP = require('../utils/sendOtp');
 
 
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+
 
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
@@ -317,14 +318,15 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
-const {PayLaterAccount} = require('../models/userAccountDetails');
+
+// const {PayLaterAccount} = require('../models/userAccountDetails');
 
 
 
 
 
 
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 
 
 
