@@ -639,8 +639,6 @@ router.put('/update-domesticcardusage', async (request, response) => {
 
 
 
-
-
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -676,7 +674,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
 
 
 
