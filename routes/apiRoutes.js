@@ -4,7 +4,7 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const {Applicants,QuickFundTransferModel,otherbankpayee} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
 const nodemailer = require('nodemailer');
 const {PayLaterAccount} = require('../models/userAccountDetails');
@@ -968,7 +968,109 @@ router.post('/validate-otp', async (req, res) => {
     }
 });
 
+// Route to add a new payee
+router.post('/payees', async (req, res) => {
+    try {
+        const {
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        } = req.body;
 
+
+        const existingPayee = await otherbankpayee.findOne({ accountNumber });
+
+        if (existingPayee) {
+
+            return res.status(400).json({ error: 'Payee with this account number already exists' });
+        }
+        if (accountNumber !== confirmPayeeAccountNumber) {
+   
+            return res.status(400).json({ error: 'Account number and confirm account number do not match' });
+        }
+
+        const newPayee = new otherbankpayee({
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        });
+
+        const response = await newPayee.save();
+        return res.status(200).json({ data: response });
+    } catch (error) {
+        return res.status(400).send(error);
+    }
+});
+
+
+
+// Route to get all payees
+router.get('/payees', async (req, res) => {
+    try {
+        const otherBankpayees = await otherbankpayee.find({});
+        res.send(otherBankpayees);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to get a specific payee by ID
+router.get('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findById(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to update a specific payee by ID
+router.patch('/payees/:id', async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['payeeAccountNumber', 'payeeNickname', 'accountType', 'payeeBankIFSCCode', 'accountNumber', 'confirmPayeeAccountNumber', 'registrationAlertMobileNumber'];
+    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+});
+
+// Route to delete a specific payee by ID
+router.delete('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndDelete(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+
+//
 router.put('/payLaterAccount/pay', async (req, res) => {
     const { accountNumber } = req.body;
   
