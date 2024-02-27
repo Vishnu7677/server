@@ -27,7 +27,7 @@ const { sendEmail } = require("../emailServiecs");
 
 
 
-const axios = require('axios');
+// const axios = require('axios');
 
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
@@ -252,11 +252,7 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
-
+ 
 
 
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
@@ -278,8 +274,7 @@ const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpC
 
 router.post('/api/generated-otp ', generatedOTP);
 router.post('/api/resend-otp ',  resendOTP);
-// router.post('/send-OneTP', TaxsendOTP);
-router.post('/api/verify-OneTP', TaxverifyOTP);
+ router.post('/api/verify-OneTP', TaxverifyOTP);
 
 
  
@@ -301,22 +296,17 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 //  const sendOTP = require('../utils/sendOtp');
 
 
- 
-
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
-
+  
 
  
 
-const {PayLaterAccount} = require('../models/userAccountDetails');
+ 
 
 
 
 
 
-
-const bcrypt = require('bcrypt');
-
+ 
 
 
 
