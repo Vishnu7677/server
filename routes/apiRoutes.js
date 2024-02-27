@@ -320,7 +320,7 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 //const nodemailer = require('nodemailer');
 
 
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
+//const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
