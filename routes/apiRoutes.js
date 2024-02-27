@@ -239,9 +239,9 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
+//  const inwardController = require('../controllers/inwardController');
+// const paymentTransactionController = require('../controllers/paymentController');
+// const transferTransactionController = require('../controllers/transferController');
 
 
 
@@ -286,11 +286,11 @@ router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 })
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
+// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+// const sendOTP = require('../utils/sendOtp');
 
 
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
@@ -298,14 +298,14 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
-const {PayLaterAccount} = require('../models/userAccountDetails');
+// const {PayLaterAccount} = require('../models/userAccountDetails');
 
 
 
 
 
 
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 
 
 
@@ -1601,54 +1601,54 @@ router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
   // Block Credit Card APIS ends
 
   //Alert Subscrition APIs Starts
-  const AlertSubscription = require("../models/alertSubscription");
-  router.post('/alertsubscription', async (req, res) => {
-    const { CreditCardNumber } = req.body;
-    console.log(req.body);
-    // Check if credit card number already exists
+//   const AlertSubscription = require("../models/alertSubscription");
+//   router.post('/alertsubscription', async (req, res) => {
+//     const { CreditCardNumber } = req.body;
+//     console.log(req.body);
+//     // Check if credit card number already exists
    
   
-    try {
+//     try {
 
-        const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
-        console.log(existingCreditCard);
-        if (existingCreditCard) {
-            console.log("test1");
-            existingCreditCard.isActive = false; // Mark the existing credit card as inactive
-            await existingCreditCard.save();
-            console.log("test2");
+//         const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
+//         console.log(existingCreditCard);
+//         if (existingCreditCard) {
+//             console.log("test1");
+//             existingCreditCard.isActive = false; // Mark the existing credit card as inactive
+//             await existingCreditCard.save();
+//             console.log("test2");
     
-            return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
-        }
-        console.log("test3");
+//             return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
+//         }
+//         console.log("test3");
 
-      const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
-      const subscriptionAlert = new AlertSubscription({
-        CreditCardNumber,
-        MobileNumber,
-        emailAddress,
-        subscriptionStatus
-      });
-      console.log("test4");
-      console.log(subscriptionAlert);
+//       const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
+//       const subscriptionAlert = new AlertSubscription({
+//         CreditCardNumber,
+//         MobileNumber,
+//         emailAddress,
+//         subscriptionStatus
+//       });
+//       console.log("test4");
+//       console.log(subscriptionAlert);
 
-      await AlertSubscription.create(req.body);
-      res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-});
-router.delete("/alertsubscription/:id", async (req, res) => {
-    try {
-        const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
-        if (!SubscriptionAlert) {
-          return res.status(404).send({ message: 'Credit Card Details Was not Found' });
-        }
-        res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
-      } catch (error) {
-        return res.status(500).json({ message: "Internal Server Error ...!" });
-      }
-  });
+//       await AlertSubscription.create(req.body);
+//       res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
+//     } catch (error) {
+//       res.status(400).json({ message: error.message });
+//     }
+// });
+// router.delete("/alertsubscription/:id", async (req, res) => {
+//     try {
+//         const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
+//         if (!SubscriptionAlert) {
+//           return res.status(404).send({ message: 'Credit Card Details Was not Found' });
+//         }
+//         res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
+//       } catch (error) {
+//         return res.status(500).json({ message: "Internal Server Error ...!" });
+//       }
+//   });
 
 
   //Alert Subscrition APIs ends

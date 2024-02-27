@@ -102,6 +102,7 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   totalAmountDue: { type: String },
   currentOutstanding: { type: String },
   availableCreditLimit: { type: String },
+  AlertSubscription: {type: String},
   maximumCreditLimit: {type: String},
   
   userCreditCardcvv: { type: Number },
@@ -121,7 +122,8 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   merchantOutletTransLimit: {type: String},
 
   tapAndPayStatus: {type: Boolean},
-  tapAndPayTransLimit: {type: String}
+  tapAndPayTransLimit: {type: String},
+
 });
 
 
@@ -172,7 +174,7 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 const payLaterAccount = new mongoose.Schema({
 
 });
-const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+// const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 const userDetailsAccountsSchema = new mongoose.Schema({
   // Define the fields based on your frontend form
   vehicleRegNum: String,
@@ -203,7 +205,7 @@ const userDetailsAccountsSchema = new mongoose.Schema({
 
 
    
-  });
+  
  
   const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
   
