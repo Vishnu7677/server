@@ -6,31 +6,8 @@ const userCreditCardPin  = new mongoose.Schema({
   confirmuserCreditcardpin : {type:String},
 })
 
-const creditcardTransactions = new mongoose.Schema({
-  date : {type : Date},
-  Referencenumber : {type: Number},
-  transactionDetails : {type : String},
-  transactionAmount : {type:Number},
-  convertToEMI : {type : Boolean}
-})
-
-// const customerCreditCardLimitSchema = new mongoose.Schema({
-//   creditCardNumber: { type: Number },
-//   creditCardLimit: { type: Number },
-//   totalAmountDue: { type: Number },
-//   currentOutstanding: { type: Number },
-//   availableCreditLimit: { type: Number },
-//   userCreditCardcvv: { type: Number },
-//   userCreditCardExpiryDate: { type: String },
-//   userCreditCardStatus: { type: String },
-//   userCreditCardPin: userCreditCardPin,
-//   transactions : [creditcardTransactions]
-// });
-
 
 const transactionSchema = new mongoose.Schema({
-
-
   date: String,
   description: String,
   withdrawal: Number,
@@ -83,8 +60,6 @@ const addressSchema = new mongoose.Schema({
 });
 
 
-
-
 const emiConversionSchema = new mongoose.Schema({
   emiTenure: { type: Number },
   processingFee: { type: Number },
@@ -95,6 +70,13 @@ const emiConversionSchema = new mongoose.Schema({
 });
 
 
+const creditcardTransactions = new mongoose.Schema({
+  date : {type : Date},
+  Referencenumber : {type: Number},
+  transactionDetails : {type : String},
+  transactionAmount : {type:Number},
+  convertToEMI : [emiConversionSchema]
+})
 
 const customerCreditCardLimitSchema = new mongoose.Schema({
   creditCardNumber: { type: String },
@@ -104,7 +86,6 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   availableCreditLimit: { type: String },
   AlertSubscription: {type: String},
   maximumCreditLimit: {type: String},
-  
   userCreditCardcvv: { type: Number },
   userCreditCardExpiryDate: { type: String },
   userCreditCardStatus: { type: String },
@@ -114,13 +95,10 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   },
   atmWithdrawlStatus: {type: Boolean},
   atmTransactionLimit: {type: String},
-
   onlineTransactionStatus: {type: Boolean},
   onlineTransactionLimit: {type: String},
-
   merchantOutletStatus: {type: Boolean},
   merchantOutletTransLimit: {type: String},
-
   tapAndPayStatus: {type: Boolean},
   tapAndPayTransLimit: {type: String},
 
@@ -137,30 +115,19 @@ const userDetailsAccounts = new mongoose.Schema({
     userMobileNumber: {type: String},
     otpCode: {type: String},
     accountHolderPAN: {type: String},
-
     bankBranchIfscCode : {type: String},
-
-
     firstName: { type: String },
     lastName: { type: String },
     address: {
         street: { type: String },
-
-        city: { type: String }, 
-
+        city: { type: String },
         zipCode: { type: String }},
     accountHolderAddress: { type: addressSchema, default: {} },
     userAccountBalance: { type: Number },
     userDebitCardDetails: userDebitCardDetails,
-
-
     transactions: [transactionSchema],
     otp: {type: Number},
-
-    
-  
     creditCardTransactions : [creditcardTransactions],
-
     userCreditCardDetails : [customerCreditCardLimitSchema],
 
 });
@@ -174,7 +141,10 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 const payLaterAccount = new mongoose.Schema({
 
 });
-// const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+
+const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+
+
 const userDetailsAccountsSchema = new mongoose.Schema({
   // Define the fields based on your frontend form
   vehicleRegNum: String,
@@ -204,12 +174,8 @@ const userDetailsAccountsSchema = new mongoose.Schema({
 
 });
 
-
-
+ module.exports = { UserDetailsAccounts, PayLaterAccount };
   
-  // module.exports = { UserDetailsAccounts, PayLaterAccount };
-  
-
 
 
 

@@ -58,6 +58,7 @@ router.post('/validate-aadhaar', async (req, res) => {
  
 
 
+
 router.get('/panValid/:panNumber', async (req, res) => {
     const {panNumber} = req.params
 
@@ -228,19 +229,11 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
 router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
-
-
-
-
-
-
-
 
 
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
@@ -255,61 +248,7 @@ router.post('/api/resend-otp ',  resendOTP);
 
 
 
- 
-
-
-
- 
-
-
  router.use(express.json());
-
-
-
-router.use(express.json());
-
-
-router.get("/",(req,res)=>{
-    res.send("royal islamic bank server api routes")
-})
-
-
-
-
-
-
-const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
-
-
-
-
-
-
-
-//const nodemailer = require('nodemailer');
-
-  
-
-
-
- 
-
-
-
-
-
-
-//const bcrypt = require('bcrypt');
-
-
-
-
-
-router.get("/",(req,res)=>{
-  res.send("royal islamic bank server api routes")
-})
-
-
 
 router.post('/purchase', async (request, response) => {
     try {
