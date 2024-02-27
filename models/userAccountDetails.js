@@ -102,6 +102,7 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   totalAmountDue: { type: String },
   currentOutstanding: { type: String },
   availableCreditLimit: { type: String },
+  AlertSubscription: {type: String},
   maximumCreditLimit: {type: String},
   
   userCreditCardcvv: { type: Number },
@@ -121,7 +122,8 @@ const customerCreditCardLimitSchema = new mongoose.Schema({
   merchantOutletTransLimit: {type: String},
 
   tapAndPayStatus: {type: Boolean},
-  tapAndPayTransLimit: {type: String}
+  tapAndPayTransLimit: {type: String},
+
 });
 
 
