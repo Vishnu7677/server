@@ -2,19 +2,10 @@ const express = require("express");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
-const AWS = require("aws-sdk");
-
-
-
- const {generateForm16ASchema} = require('../models/userAccountDetails');
-
- const FixedDeposites = require("../models/fixedDeposites");
- const LoanAccount = require("../models/loanaccounts");
-
-
-
+const AWS = require("aws-sdk")
+const {generateForm16ASchema} = require('../models/userAccountDetails');
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
+const {Applicants,QuickFundTransferModel,otherbankpayee} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
 const nodemailer = require('nodemailer');
 const {PayLaterAccount} = require('../models/userAccountDetails');
@@ -22,15 +13,11 @@ const bcrypt = require('bcrypt');
 const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
-
 const axios = require('axios');
-
-
 const { sendEmail } = require("../emailServiecs");
+const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
 
-
-//const axios = require('axios');
 
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
@@ -69,7 +56,6 @@ router.post('/validate-aadhaar', async (req, res) => {
 }
 );
  
-
 
 
 
@@ -190,8 +176,6 @@ function calculateFinancialYearTax(interestPaid) {
 router.post('/generatePDF', async (req, res) => {
     try {
         const { financialYear, quarter } = req.body;
-
-        // Sample data - Replace this with actual calculation logic based on selected quarter
         const solutionsSubmitted = 100;
         const ratePerSolution = 10;
         const payPercentage = 0.8;
@@ -201,14 +185,12 @@ router.post('/generatePDF', async (req, res) => {
         const tdsDeduction = grossEarnings * 0.1;
         const netEarnings = grossEarnings - tdsDeduction;
 
-        // Create a new PDF document
         const doc = new PDFDocument();
 
-        // Pipe the PDF document to a writable stream
+      
         const stream = fs.createWriteStream('Form16A.pdf');
         doc.pipe(stream);
 
-        // Add content to the PDF
         doc.fontSize(12);
         doc.text('Financial Year: ' + financialYear);
         doc.text('Quarter: ' + quarter);
@@ -225,15 +207,15 @@ router.post('/generatePDF', async (req, res) => {
                 ['TDS Deduction', tdsDeduction],
                 ['Net Earnings', netEarnings]
             ],
-            // Position of the table
+           
             x: 50,
             y: doc.y
         });
 
-        // Finalize the PDF
+       
         doc.end();
 
-        // Send the PDF as a response
+       
         stream.on('finish', () => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
@@ -254,17 +236,16 @@ router.post('/transfer-Type', transferTransactionController.createTransferTransa
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
 
 
-
-
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
   
 
 
+
 router.post('/api/generated-otp ', generatedOTP);
 router.post('/api/resend-otp ',  resendOTP);
-// router.post('/send-OneTP', TaxsendOTP);
-router.post('/api/verify-OneTP', TaxverifyOTP);
+ router.post('/api/verify-OneTP', TaxverifyOTP);
+
 
 
  router.use(express.json());
@@ -501,9 +482,6 @@ router.post('/verify-otp', async (request, response)=> {
     }
 });
 
-
-
-
   router.post('/creditcarddetails', async (request, response) => {
     try {
         const { userAccountNumber, userCreditCardDetails} = request.body;
@@ -660,8 +638,6 @@ router.put('/update-domesticcardusage', async (request, response) => {
 
 
 
-
-
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -697,7 +673,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
 
 
 
@@ -1081,6 +1056,7 @@ router.post('/accountStatement', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
     }
 });
+
 
 
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
@@ -1522,7 +1498,7 @@ router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
           company: "Royal Islamic Bank"
         }
       })
-      return res.status(200).json({ message: `An otp has been sent to your email address`})
+      return res.status(200).json(`{ message: An otp has been sent to your email address}`)
     }
     catch (error){
       console.error("Error sending otp:", error);
@@ -1559,54 +1535,54 @@ router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
   // Block Credit Card APIS ends
 
   //Alert Subscrition APIs Starts
-  const AlertSubscription = require("../models/alertSubscription");
-  router.post('/alertsubscription', async (req, res) => {
-    const { CreditCardNumber } = req.body;
-    console.log(req.body);
-    // Check if credit card number already exists
+//   const AlertSubscription = require("../models/alertSubscription");
+//   router.post('/alertsubscription', async (req, res) => {
+//     const { CreditCardNumber } = req.body;
+//     console.log(req.body);
+//     // Check if credit card number already exists
    
   
-    try {
+//     try {
 
-        const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
-        console.log(existingCreditCard);
-        if (existingCreditCard) {
-            console.log("test1");
-            existingCreditCard.isActive = false; // Mark the existing credit card as inactive
-            await existingCreditCard.save();
-            console.log("test2");
+//         const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
+//         console.log(existingCreditCard);
+//         if (existingCreditCard) {
+//             console.log("test1");
+//             existingCreditCard.isActive = false; // Mark the existing credit card as inactive
+//             await existingCreditCard.save();
+//             console.log("test2");
     
-            return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
-        }
-        console.log("test3");
+//             return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
+//         }
+//         console.log("test3");
 
-      const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
-      const subscriptionAlert = new AlertSubscription({
-        CreditCardNumber,
-        MobileNumber,
-        emailAddress,
-        subscriptionStatus
-      });
-      console.log("test4");
-      console.log(subscriptionAlert);
+//       const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
+//       const subscriptionAlert = new AlertSubscription({
+//         CreditCardNumber,
+//         MobileNumber,
+//         emailAddress,
+//         subscriptionStatus
+//       });
+//       console.log("test4");
+//       console.log(subscriptionAlert);
 
-      await AlertSubscription.create(req.body);
-      res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-});
-router.delete("/alertsubscription/:id", async (req, res) => {
-    try {
-        const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
-        if (!SubscriptionAlert) {
-          return res.status(404).send({ message: 'Credit Card Details Was not Found' });
-        }
-        res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
-      } catch (error) {
-        return res.status(500).json({ message: "Internal Server Error ...!" });
-      }
-  });
+//       await AlertSubscription.create(req.body);
+//       res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
+//     } catch (error) {
+//       res.status(400).json({ message: error.message });
+//     }
+// });
+// router.delete("/alertsubscription/:id", async (req, res) => {
+//     try {
+//         const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
+//         if (!SubscriptionAlert) {
+//           return res.status(404).send({ message: 'Credit Card Details Was not Found' });
+//         }
+//         res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
+//       } catch (error) {
+//         return res.status(500).json({ message: "Internal Server Error ...!" });
+//       }
+//   });
 
 
   //Alert Subscrition APIs ends
@@ -1754,159 +1730,117 @@ router.post('/autodebit/no', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+// 
 
-router.post("/loan-accounts", async (req, res) => {
+// Route to add a new payee
+router.post('/payees', async (req, res) => {
     try {
-      const newLoanAccount = new LoanAccount(req.body);
-      const savedLoanAccount = await newLoanAccount.save();
-      res.json(savedLoanAccount);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  
-  });
-  
-  // Get all loan accounts
-  router.get("/loan-accounts", async (req, res) => {
-  
-      try {
-        const loanAccounts = await LoanAccount.find();
-        res.json(loanAccounts);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
-    });
-    
-    router.get("/loan-accounts/:id", async (req, res) => {
-      const { id } = req.params;
-    
-      try {
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-          return res.status(400).json({ message: "Invalid Loan Account ID" });
-        }
-    
-        const loanAccount = await LoanAccount.findOne({ _id: id });
-    
-        if (!loanAccount) {
-          return res.status(404).json({ message: "Loan Account Not Found" });
-        }
-    
         const {
-          accountnumber,
-          sanctionedAmount,
-          principalAmount,
-          currentAmount,
-          dueDate,
-          overdueAmount /* other fields */,
-        } = loanAccount;
-    
-        const loanAccountDetails = {
-          accountnumber,
-          sanctionedAmount,
-          principalAmount,
-          currentAmount,
-          dueDate,
-          overdueAmount,
-        };
-    
-        res.status(200).json({ loanAccountDetails });
-      } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ message: "Internal Server Error" });
-      }
-    });
-    
-  
-    router.post("/fixeddeposites", async (req, res) => {
-      try {
-        const fixedDeposites = new FixedDeposites(req.body);
-        await fixedDeposites.save();
-    
-        return res
-          .status(200)
-          .json({ message: "Fixed deposit details saved successfully" });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-    router.get("/fixeddeposites", async (req, res) => {
-      try {
-        const allfixeddeposites = await FixedDeposites.find({});
-        res.json(allfixeddeposites);
-      } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-  
-    router.post("/generate-pdf", async (req, res) => {
-      const { email, selectedOption } = req.body;
-    
-      try {
-        let selectedOption = await FixedDeposites.findOne({ userEmailId: email });
-    
-        if (!selectedOption) {
-          return res
-            .status(400)
-            .json({ success: false, message: "User not found." });
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        } = req.body;
+
+
+        const existingPayee = await otherbankpayee.findOne({ accountNumber });
+
+        if (existingPayee) {
+
+            return res.status(400).json({ error: 'Payee with this account number already exists' });
         }
-    
-        if (selectedOption === "sendAdvice") {
-          await sendAdviceEmail(email);
-        } else if (selectedOption === "downloadDevice") {
-          await generateAndDownloadPDF(res);
-        } else {
-          return res
-            .status(400)
-            .json({ success: false, message: "Invalid selected option." });
-        }
-        async function sendAdviceEmail(email) {
-          const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            service: "gmail",
-            port: 465,
-            auth: {
-              user: "meenakshichitikila@gmail.com",
-              pass: "Meenakshi@1234",
-            },
-          });
-        
-          const mailOptions = {
-            from: "meenakshichitikila@gmail.com",
-            to: email,
-            subject: "FD Advice",
-            text: "Here is your FD advice.",
-          };
-        
-          await transporter.sendMail(mailOptions);
-        }
-        
-        async function generateAndDownloadPDF(res) {
-          const pdfDoc = await pdfLib.Document.create();
-          const page = pdfDoc.addPage();
-          const { width, height } = page.getSize();
-          page.drawText("Fixed Deposit Advice", { x: 50, y: height - 50 });
-        
-          const pdfBytes = await pdfDoc.save();
-        
-          res.setHeader("Content-Type", "application/pdf");
-          res.setHeader("Content-Disposition", "attachment; filename=fd_advice.pdf");
-          res.send(pdfBytes);
-        }
-        res.json({
-          success: true,
-          message: "PDF generated or email sent successfully.",
-        });
-      } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ success: false, message: "Internal server error." });
-      }
-    });
-    
-  
-  module.exports = router;
-  
+        if (accountNumber !== confirmPayeeAccountNumber) {
    
+            return res.status(400).json({ error: 'Account number and confirm account number do not match' });
+        }
+
+        const newPayee = new otherbankpayee({
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        });
+
+        const response = await newPayee.save();
+        return res.status(200).json({ data: response });
+    } catch (error) {
+        return res.status(400).send(error);
+    }
+});
+
+
+
+// Route to get all payees
+router.get('/payees', async (req, res) => {
+    try {
+        const otherBankpayees = await otherbankpayee.find({});
+        res.send(otherBankpayees);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to get a specific payee by ID
+router.get('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findById(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to update a specific payee by ID
+router.patch('/payees/:id', async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['payeeAccountNumber', 'payeeNickname', 'accountType', 'payeeBankIFSCCode', 'accountNumber', 'confirmPayeeAccountNumber', 'registrationAlertMobileNumber'];
+    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+});
+
+// Route to delete a specific payee by ID
+router.delete('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndDelete(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+
+//
+
+
+
+
+
+
+
+
+module.exports = router;

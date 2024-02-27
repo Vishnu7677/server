@@ -10,7 +10,7 @@ router.post("/userdetails", async (req, res) => {
       const { EmailID } = req.body;
       // Check if the email already exists in the database
       const existingUser = await Form60Details.findOne({ EmailID });
-      
+
       if (existingUser) {
           // If the email already exists, return a message indicating that the user is already registered
           return res.status(400).json({ message: "User already registered. Use a different email for update." });
@@ -110,7 +110,7 @@ router.post("/userdetails", async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
   });
- //Delete the userdetails
+ //Delete the userdetails.
  router.delete("/userdetails/:id", async (req, res) => {
     try {
         const form60Userdetails = await Form60Details.findByIdAndDelete(req.params.id);
@@ -122,7 +122,6 @@ router.post("/userdetails", async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error ...!" });
       }
   });
-
 
   //otp validation
   router.post("/send-otp", async (req, res) => {
@@ -202,10 +201,6 @@ router.post("/verify-otp/:EmailID", async (req, res) =>{
 
 //   }
 // });
-
-
-
-
 
 
 

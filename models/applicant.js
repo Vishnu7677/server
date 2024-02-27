@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const quickFundTransferSchema = new mongoose.Schema({
@@ -49,8 +48,40 @@ const generateForm16ASchema = new mongoose.Schema({
 const Form16ARequest = mongoose.model('Form16ARequest', generateForm16ASchema);
 
 
+const otherbankpayeeSchema = new mongoose.Schema({
+  payeeAccountNumber: {
+    type: String,
+    required: true
+  },
+  payeeNickname: {
+    type: String,
+    required: true
+  },
+  accountType: {
+    type: String,
+    enum: ['Savings', 'Current'],
+    required: true
+  },
+  payeeBankIFSCCode: {
+    type: String,
+    required: true
+  },
+  accountNumber: {
+    type: String,
+    required: true
+  },
+  confirmPayeeAccountNumber: {
+    type: String,
+    required: true
+  },
+  registrationAlertMobileNumber: {
+    type: String,
+    required: true
+  }
+});
+
+const otherbankpayee = mongoose.model('otherbankpayee', otherbankpayeeSchema);
 
 
 
-module.exports = {Applicants,QuickFundTransferModel, generateForm16ASchema};
-
+module.exports = {Applicants,QuickFundTransferModel,generateForm16ASchema,otherbankpayee};
