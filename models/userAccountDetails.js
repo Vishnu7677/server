@@ -201,13 +201,14 @@ const userDetailsAccountsSchema = new mongoose.Schema({
   vehicleRegistrationNumber: String,
   rechargeAmount: Number,
   debitAccount: String
+
 });
 
 
    
   
  
-  const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+  //const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
   
   module.exports = { UserDetailsAccounts, PayLaterAccount };
   
@@ -215,7 +216,7 @@ const userDetailsAccountsSchema = new mongoose.Schema({
 
 
 
-module.exports = {UserDetailsAccounts,PayLaterAccount};
+
 
 
 
