@@ -172,7 +172,7 @@ const UserDetailsAccounts = mongoose.model('userDetailsAccounts', userDetailsAcc
 const payLaterAccount = new mongoose.Schema({
 
 });
-const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
+// const PayLaterAccount = mongoose.model('payLaterAccount', payLaterAccount);
 const userDetailsAccountsSchema = new mongoose.Schema({
   // Define the fields based on your frontend form
   vehicleRegNum: String,

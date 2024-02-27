@@ -30,7 +30,8 @@ const { sendEmail } = require("../emailServiecs");
 
 
 
-//const axios = require('axios');
+
+
 
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
@@ -302,16 +303,17 @@ router.post('/api/verify-OneTP', TaxverifyOTP);
 
 
 
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+})
+
+
 
 
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
 
-// const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-// const sendOTP = require('../utils/sendOtp');
 
-
-// const nodemailer = require('nodemailer');
 
 
 
@@ -567,9 +569,6 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
-
-
-
 
   router.post('/creditcarddetails', async (request, response) => {
     try {
