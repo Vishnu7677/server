@@ -3,6 +3,7 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const AWS = require("aws-sdk")
+const {generateForm16ASchema} = require('../models/userAccountDetails');
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
 const {Applicants,QuickFundTransferModel,otherbankpayee} =require('../models/applicant');
 const sendOTP = require('../utils/sendOtp');
@@ -12,16 +13,69 @@ const bcrypt = require('bcrypt');
 const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
-
+const axios = require('axios');
 const { sendEmail } = require("../emailServiecs");
+const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
 
+// aadhar
+router.post('/validate-aadhaar', async (req, res) => {
+    const { aadhaarNumber } = req.body;
+  
+    if (!aadhaarNumber) {
+      return res.status(400).json({ error: 'Aadhaar number is required.' });
+        //  return res.status(400).json({ error: 'Aadhaar number is required.' });
+}
+  
+    const encodedParams = new URLSearchParams();
+    encodedParams.set('txn_id', '17c6fa41-778f-49c1-a80a-cfaf7fae2fb8');
+    encodedParams.set('consent', 'Y');
+    encodedParams.set('uidnumber', aadhaarNumber);
+    encodedParams.set('clientid', '222');
+    encodedParams.set('method', 'uidvalidatev2');
+  
+    const options = {
+      method: 'POST',
+      url: 'https://verifyaadhaarnumber.p.rapidapi.com/Uidverifywebsvcv1/VerifyAadhaarNumber',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'X-RapidAPI-Key': '6e52bb948cmshe5fe0588768acfcp123e37jsna917927a11e6',
+        'X-RapidAPI-Host': 'verifyaadhaarnumber.p.rapidapi.com'
+      },
+      data: encodedParams,
+    };
+  
+    try {
+      const response = await axios.request(options);
+      return res.status(200).json(response.data);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+);
+ 
 
+router.get('/panValid/:panNumber', async (req, res) => {
+    const {panNumber} = req.params
 
-
-
-
-
+    const options = {
+      method: 'GET',
+      url: `https://pan-card-verification-at-lowest-price.p.rapidapi.com/verifyPan/${panNumber}`,
+      headers: {
+        'x-rapid-api': 'rapid-api-database',
+        'X-RapidAPI-Key': '99dd840abdmshd183db508cdec97p19a7f3jsnac9961b49d13',
+        'X-RapidAPI-Host': 'pan-card-verification-at-lowest-price.p.rapidapi.com'
+      }
+    };
+    
+    try {
+        const response = await axios.request(options);
+        return res.status(200).json({data:response.data})
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 router.post("/generateCertificate", async (request, response) => {
   try {
@@ -115,29 +169,87 @@ function calculateFinancialYearTax(interestPaid) {
 }
 
 
+
+router.post('/generatePDF', async (req, res) => {
+    try {
+        const { financialYear, quarter } = req.body;
+
+        // Sample data - Replace this with actual calculation logic based on selected quarter
+        const solutionsSubmitted = 100;
+        const ratePerSolution = 10;
+        const payPercentage = 0.8;
+        const grossEarningPreBonus = solutionsSubmitted * ratePerSolution;
+        const grossBonus = grossEarningPreBonus * 0.2;
+        const grossEarnings = grossEarningPreBonus + grossBonus;
+        const tdsDeduction = grossEarnings * 0.1;
+        const netEarnings = grossEarnings - tdsDeduction;
+
+        // Create a new PDF document
+        const doc = new PDFDocument();
+
+        // Pipe the PDF document to a writable stream
+        const stream = fs.createWriteStream('Form16A.pdf');
+        doc.pipe(stream);
+
+        // Add content to the PDF
+        doc.fontSize(12);
+        doc.text('Financial Year: ' + financialYear);
+        doc.text('Quarter: ' + quarter);
+        doc.moveDown();
+        doc.table({
+            headers: ['Description', 'Amount'],
+            rows: [
+                ['No.of Solutions Submitted', solutionsSubmitted],
+                ['Rate Per Solution', ratePerSolution],
+                ['Pay%', payPercentage],
+                ['Gross Earning Prebonus', grossEarningPreBonus],
+                ['Gross Bonus', grossBonus],
+                ['Gross Earnings', grossEarnings],
+                ['TDS Deduction', tdsDeduction],
+                ['Net Earnings', netEarnings]
+            ],
+            // Position of the table
+            x: 50,
+            y: doc.y
+        });
+
+        // Finalize the PDF
+        doc.end();
+
+        // Send the PDF as a response
+        stream.on('finish', () => {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
+            fs.createReadStream('Form16A.pdf').pipe(res);
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+
+
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
 router.post('/transfer-Type', transferTransactionController.createTransferTransaction);
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
 
- 
-// router.post('/send-OneTP', sendOTP);
-// router.post('/verify-OneTP', verifyOTP);
 
-// scheduled ends
-//   
-// 
+router.post('/api/generated-otp ', generatedOTP);
+router.post('/api/resend-otp ',  resendOTP);
+// router.post('/send-OneTP', TaxsendOTP);
+router.post('/api/verify-OneTP', TaxverifyOTP);
 
- 
-//
- router.use(express.json());
+
+
+router.use(express.json());
 
 
 
 router.post('/purchase', async (request, response) => {
     try {
-         
 
         const {
             vehicleRegNum, vehicleMake, vehicleModel,
@@ -169,6 +281,7 @@ router.post('/purchase', async (request, response) => {
             vehicleMake,
             vehicleModel,
             customerDetails: userDetails._id,
+        
         });
 
         await newApplicant.save();
@@ -179,9 +292,21 @@ router.post('/purchase', async (request, response) => {
   }catch (error) {
         console.error(error.message, 'purchase-error');
         return response.status(500).json({ error: 'Internal Server Error' });
+
     }
+  });
   
-});
+  async function generatePurchaseOrderNumber() {
+    try {
+      const latestPurchaseOrder = await UserDetailsAccounts.findOne().sort({ purchaseOrderNumber: -1 }).limit(1);
+      const lastOrderNumber = latestPurchaseOrder ? latestPurchaseOrder.purchaseOrderNumber : 0;
+      const newOrderNumber = lastOrderNumber + 1;
+      return newOrderNumber;
+    } catch (error) {
+      console.error('Error during purchase order number generation:', error);
+      throw error;
+    }
+  }
 
 
 
@@ -354,6 +479,7 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
+
 
 
 
@@ -551,7 +677,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
 
 
 
-
   router.post('/generate-Credit-Card-Pin', async (req, res) => {
     try {
         const { userAccountNumber, creditCardPin, confirmCreditCardPin } = req.body;
@@ -589,6 +714,7 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 
 
@@ -668,6 +794,7 @@ router.post('/createReissueCard', async (req, res) => {
 });
 
 function generateUniqueSRN() {
+    
     return `SRN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
@@ -744,6 +871,8 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
         return response.status(500).json({ message: 'Internal Server Error at Credit Card Details Update' });
     }
 });
+
+
 
 
 
@@ -840,6 +969,7 @@ router.post('/quickFundTransfer', async (req, res) => {
 });
 
 
+
 router.post('/debit-notification', async (req, res) => {
     try {
         const { email, amountDebited } = req.body;
@@ -902,6 +1032,8 @@ router.post('/debit-notification', async (req, res) => {
     }
 });
 
+
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -925,6 +1057,8 @@ router.post('/accountStatement', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
     }
 });
+
+
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 router.post('/generate-otp', async (request, response) => {
     try {
@@ -961,116 +1095,14 @@ router.post('/validate-otp', async (req, res) => {
         } else {
             console.log('Invalid OTP');
             return res.status(400).json({ message: 'Invalid OTP' });
-        }
+        } 
     } catch (error) {
         console.error('Error validating OTP:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-// Route to add a new payee
-router.post('/payees', async (req, res) => {
-    try {
-        const {
-            payeeAccountNumber,
-            payeeNickname,
-            accountType,
-            payeeBankIFSCCode,
-            accountNumber,
-            confirmPayeeAccountNumber,
-            registrationAlertMobileNumber
-        } = req.body;
 
-
-        const existingPayee = await otherbankpayee.findOne({ accountNumber });
-
-        if (existingPayee) {
-
-            return res.status(400).json({ error: 'Payee with this account number already exists' });
-        }
-        if (accountNumber !== confirmPayeeAccountNumber) {
-   
-            return res.status(400).json({ error: 'Account number and confirm account number do not match' });
-        }
-
-        const newPayee = new otherbankpayee({
-            payeeAccountNumber,
-            payeeNickname,
-            accountType,
-            payeeBankIFSCCode,
-            accountNumber,
-            confirmPayeeAccountNumber,
-            registrationAlertMobileNumber
-        });
-
-        const response = await newPayee.save();
-        return res.status(200).json({ data: response });
-    } catch (error) {
-        return res.status(400).send(error);
-    }
-});
-
-
-
-// Route to get all payees
-router.get('/payees', async (req, res) => {
-    try {
-        const otherBankpayees = await otherbankpayee.find({});
-        res.send(otherBankpayees);
-    } catch (error) {
-        res.status(500).send();
-    }
-});
-
-// Route to get a specific payee by ID
-router.get('/payees/:id', async (req, res) => {
-    try {
-        const otherBankpayee = await otherbankpayee.findById(req.params.id);
-        if (!otherBankpayee) {
-            return res.status(404).send();
-        }
-        res.send(otherBankpayee);
-    } catch (error) {
-        res.status(500).send();
-    }
-});
-
-// Route to update a specific payee by ID
-router.patch('/payees/:id', async (req, res) => {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['payeeAccountNumber', 'payeeNickname', 'accountType', 'payeeBankIFSCCode', 'accountNumber', 'confirmPayeeAccountNumber', 'registrationAlertMobileNumber'];
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-
-    if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid updates!' });
-    }
-
-    try {
-        const otherBankpayee = await otherbankpayee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-        if (!otherBankpayee) {
-            return res.status(404).send();
-        }
-        res.send(otherBankpayee);
-    } catch (error) {
-        res.status(400).send(error);
-    }
-});
-
-// Route to delete a specific payee by ID
-router.delete('/payees/:id', async (req, res) => {
-    try {
-        const otherBankpayee = await otherbankpayee.findByIdAndDelete(req.params.id);
-        if (!otherBankpayee) {
-            return res.status(404).send();
-        }
-        res.send(otherBankpayee);
-    } catch (error) {
-        res.status(500).send();
-    }
-});
-
-
-//
 router.put('/payLaterAccount/pay', async (req, res) => {
     const { accountNumber } = req.body;
   
@@ -1080,12 +1112,15 @@ router.put('/payLaterAccount/pay', async (req, res) => {
       if (!payLaterAccount) {
         return res.status(404).json({ message: 'PayLater account not found' });
       }
-      payLaterAccount.utilisedLimit = 0;
-      payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
-      payLaterAccount.dueDate = '';
-      await payLaterAccount.save();
-  
-      return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     if(payLaterAccount.totalAmountPayable>0){
+        payLaterAccount.utilisedLimit = 0;
+        payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
+        payLaterAccount.dueDate = '';
+        payLaterAccount.totalAmountPayable = 0;
+        await payLaterAccount.save();
+    
+        return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     }
     } catch (e) {
       console.log(e, 'payLaterAPI');
   
@@ -1334,7 +1369,9 @@ router.post('/vehicleRegistration', async (request, response) => {
     } catch (error) {
         console.error(error.message, 'vehicle-registration');
         // return response.status(500).json({ error: 'Internal Server Error at Vehicle Registration' });
-        return res.status(500).json({ error:`Internal Server Error at Vehicle Registration: ${error.message}` });
+
+        return res.status(500).json(`{ error: Internal Server Error at Vehicle Registration: ${error.message} }`);
+
 
     }
 });
@@ -1359,6 +1396,8 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
+
 
 
 
@@ -1459,7 +1498,7 @@ router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
           company: "Royal Islamic Bank"
         }
       })
-      return res.status(200).json({ message: `An otp has been sent to your email address`})
+      return res.status(200).json(`{ message: An otp has been sent to your email address}`)
     }
     catch (error){
       console.error("Error sending otp:", error);
@@ -1691,6 +1730,113 @@ router.post('/autodebit/no', async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
+// 
+
+// Route to add a new payee
+router.post('/payees', async (req, res) => {
+    try {
+        const {
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        } = req.body;
+
+
+        const existingPayee = await otherbankpayee.findOne({ accountNumber });
+
+        if (existingPayee) {
+
+            return res.status(400).json({ error: 'Payee with this account number already exists' });
+        }
+        if (accountNumber !== confirmPayeeAccountNumber) {
+   
+            return res.status(400).json({ error: 'Account number and confirm account number do not match' });
+        }
+
+        const newPayee = new otherbankpayee({
+            payeeAccountNumber,
+            payeeNickname,
+            accountType,
+            payeeBankIFSCCode,
+            accountNumber,
+            confirmPayeeAccountNumber,
+            registrationAlertMobileNumber
+        });
+
+        const response = await newPayee.save();
+        return res.status(200).json({ data: response });
+    } catch (error) {
+        return res.status(400).send(error);
+    }
+});
+
+
+
+// Route to get all payees
+router.get('/payees', async (req, res) => {
+    try {
+        const otherBankpayees = await otherbankpayee.find({});
+        res.send(otherBankpayees);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to get a specific payee by ID
+router.get('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findById(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// Route to update a specific payee by ID
+router.patch('/payees/:id', async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['payeeAccountNumber', 'payeeNickname', 'accountType', 'payeeBankIFSCCode', 'accountNumber', 'confirmPayeeAccountNumber', 'registrationAlertMobileNumber'];
+    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+});
+
+// Route to delete a specific payee by ID
+router.delete('/payees/:id', async (req, res) => {
+    try {
+        const otherBankpayee = await otherbankpayee.findByIdAndDelete(req.params.id);
+        if (!otherBankpayee) {
+            return res.status(404).send();
+        }
+        res.send(otherBankpayee);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+
+//
+
+
 
 
 
@@ -1698,5 +1844,3 @@ router.post('/autodebit/no', async (req, res) => {
 
 
 module.exports = router;
-
-
