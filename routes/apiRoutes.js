@@ -18,6 +18,7 @@ const { sendEmail } = require("../emailServiecs");
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
 
+
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
     const { aadhaarNumber } = req.body;
@@ -55,6 +56,7 @@ router.post('/validate-aadhaar', async (req, res) => {
 }
 );
  
+
 
 router.get('/panValid/:panNumber', async (req, res) => {
     const {panNumber} = req.params
@@ -173,8 +175,6 @@ function calculateFinancialYearTax(interestPaid) {
 router.post('/generatePDF', async (req, res) => {
     try {
         const { financialYear, quarter } = req.body;
-
-        // Sample data - Replace this with actual calculation logic based on selected quarter
         const solutionsSubmitted = 100;
         const ratePerSolution = 10;
         const payPercentage = 0.8;
@@ -184,14 +184,12 @@ router.post('/generatePDF', async (req, res) => {
         const tdsDeduction = grossEarnings * 0.1;
         const netEarnings = grossEarnings - tdsDeduction;
 
-        // Create a new PDF document
         const doc = new PDFDocument();
 
-        // Pipe the PDF document to a writable stream
+      
         const stream = fs.createWriteStream('Form16A.pdf');
         doc.pipe(stream);
 
-        // Add content to the PDF
         doc.fontSize(12);
         doc.text('Financial Year: ' + financialYear);
         doc.text('Quarter: ' + quarter);
@@ -208,15 +206,15 @@ router.post('/generatePDF', async (req, res) => {
                 ['TDS Deduction', tdsDeduction],
                 ['Net Earnings', netEarnings]
             ],
-            // Position of the table
+           
             x: 50,
             y: doc.y
         });
 
-        // Finalize the PDF
+       
         doc.end();
 
-        // Send the PDF as a response
+       
         stream.on('finish', () => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
@@ -230,6 +228,7 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
+
 router.post('/payment-Type', paymentTransactionController.createPaymentTransaction);
 router.get('/payment-Type', paymentTransactionController.getPaymentTransactions);
 
@@ -237,14 +236,78 @@ router.post('/transfer-Type', transferTransactionController.createTransferTransa
 router.get('/transfer-Type', transferTransactionController.getTransferTransactions);
 
 
+
+
+
+
+
+
+
+const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
+
+  
+
+
+
 router.post('/api/generated-otp ', generatedOTP);
 router.post('/api/resend-otp ',  resendOTP);
-// router.post('/send-OneTP', TaxsendOTP);
-router.post('/api/verify-OneTP', TaxverifyOTP);
+ router.post('/api/verify-OneTP', TaxverifyOTP);
+
+
+
+ 
+
+
+
+ 
+
+
+ router.use(express.json());
 
 
 
 router.use(express.json());
+
+
+router.get("/",(req,res)=>{
+    res.send("royal islamic bank server api routes")
+})
+
+
+
+
+
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
+
+
+
+
+
+
+
+//const nodemailer = require('nodemailer');
+
+  
+
+
+
+ 
+
+
+
+
+
+
+//const bcrypt = require('bcrypt');
+
+
+
+
+
+router.get("/",(req,res)=>{
+  res.send("royal islamic bank server api routes")
+})
 
 
 
@@ -479,9 +542,6 @@ router.post('/verify-otp', async (request, response)=> {
         return response.status(500).json({message: 'Internal server error at OTP Verification'})
     }
 });
-
-
-
 
   router.post('/creditcarddetails', async (request, response) => {
     try {
@@ -1059,6 +1119,7 @@ router.post('/accountStatement', async (request, response) => {
 });
 
 
+
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 router.post('/generate-otp', async (request, response) => {
     try {
@@ -1535,54 +1596,54 @@ router.get('/blockcreditcard/:id', getBlockedCreditCard, (req, res) => {
   // Block Credit Card APIS ends
 
   //Alert Subscrition APIs Starts
-  const AlertSubscription = require("../models/alertSubscription");
-  router.post('/alertsubscription', async (req, res) => {
-    const { CreditCardNumber } = req.body;
-    console.log(req.body);
-    // Check if credit card number already exists
+//   const AlertSubscription = require("../models/alertSubscription");
+//   router.post('/alertsubscription', async (req, res) => {
+//     const { CreditCardNumber } = req.body;
+//     console.log(req.body);
+//     // Check if credit card number already exists
    
   
-    try {
+//     try {
 
-        const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
-        console.log(existingCreditCard);
-        if (existingCreditCard) {
-            console.log("test1");
-            existingCreditCard.isActive = false; // Mark the existing credit card as inactive
-            await existingCreditCard.save();
-            console.log("test2");
+//         const existingCreditCard = await AlertSubscription.findOne({ CreditCardNumber });
+//         console.log(existingCreditCard);
+//         if (existingCreditCard) {
+//             console.log("test1");
+//             existingCreditCard.isActive = false; // Mark the existing credit card as inactive
+//             await existingCreditCard.save();
+//             console.log("test2");
     
-            return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
-        }
-        console.log("test3");
+//             return res.status(201).json({ message: 'You Already Subscribed for SubscriptionAlert Notifications' });
+//         }
+//         console.log("test3");
 
-      const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
-      const subscriptionAlert = new AlertSubscription({
-        CreditCardNumber,
-        MobileNumber,
-        emailAddress,
-        subscriptionStatus
-      });
-      console.log("test4");
-      console.log(subscriptionAlert);
+//       const { emailAddress,  MobileNumber, subscriptionStatus } = req.body;
+//       const subscriptionAlert = new AlertSubscription({
+//         CreditCardNumber,
+//         MobileNumber,
+//         emailAddress,
+//         subscriptionStatus
+//       });
+//       console.log("test4");
+//       console.log(subscriptionAlert);
 
-      await AlertSubscription.create(req.body);
-      res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-});
-router.delete("/alertsubscription/:id", async (req, res) => {
-    try {
-        const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
-        if (!SubscriptionAlert) {
-          return res.status(404).send({ message: 'Credit Card Details Was not Found' });
-        }
-        res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
-      } catch (error) {
-        return res.status(500).json({ message: "Internal Server Error ...!" });
-      }
-  });
+//       await AlertSubscription.create(req.body);
+//       res.status(200).json({ message: ' Subscribed for SubscriptionAlert Notifications' });
+//     } catch (error) {
+//       res.status(400).json({ message: error.message });
+//     }
+// });
+// router.delete("/alertsubscription/:id", async (req, res) => {
+//     try {
+//         const SubscriptionAlert = await AlertSubscription.findByIdAndDelete(req.params.id);
+//         if (!SubscriptionAlert) {
+//           return res.status(404).send({ message: 'Credit Card Details Was not Found' });
+//         }
+//         res.send({ message: 'Credit Card Subcription Alert Notification Deleted Successfully' });
+//       } catch (error) {
+//         return res.status(500).json({ message: "Internal Server Error ...!" });
+//       }
+//   });
 
 
   //Alert Subscrition APIs ends
