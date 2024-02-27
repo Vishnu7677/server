@@ -5,8 +5,7 @@ const cors = require("cors");
 
   
 // // 
-const { sendOTP, verifyOTP } = require('./controllers/otpController');
-
+ 
 
 
 
@@ -29,8 +28,7 @@ require("dotenv").config();
 
   
 // 
-// const {TaxsendOTP, TaxverifyOTP } = require('./controllers/otpController');
-const {generatedOTP, resendOTP, TaxverifyOTP } = require('./controllers/otpController');
+ const {generatedOTP, resendOTP, TaxverifyOTP } = require('./controllers/otpController');
 
 //
  
@@ -70,21 +68,14 @@ mongoose
 .catch((error)=>console.log(error));
 
 // 
-
-//   // inward remittance sched starts 
-//   const inwardRemittanceRoutes = require('./routes/apiRoutes');
-//   app.use('/api', inwardRemittanceRoutes);
-
-//   app.use('/api', apiRoutes);
-// inward remittance sched ends 
+ 
 // 
 
 
 app.post('/api/generated-otp', generatedOTP );
 app.post('/api/resend-otp', resendOTP );
 
-// app.post('/api/send-OneTP', TaxsendOTP);
-app.post('/api/verify-OneTP', TaxverifyOTP);
+ app.post('/api/verify-OneTP', TaxverifyOTP);
 
 
 
@@ -98,35 +89,3 @@ app.listen(port, ()=>console.log(`Server Running at ${port}`));
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-// inward remittance sched starts
-// const inwardRemittanceRoutes = require("./routes/apiRoutes");
-// app.use("/api", inwardRemittanceRoutes);
-
-// app.use('/api', apiRoutes);
-// inward remittance sched ends
-//
-
-// app.post("/api/send", sendOTP);
-// app.post("/api/verify", verifyOTP);
- 
- 
