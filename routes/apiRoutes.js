@@ -201,8 +201,6 @@ function calculateFinancialYearTax(interestPaid) {
 router.post('/generatePDF', async (req, res) => {
     try {
         const { financialYear, quarter } = req.body;
-
-        // Sample data - Replace this with actual calculation logic based on selected quarter
         const solutionsSubmitted = 100;
         const ratePerSolution = 10;
         const payPercentage = 0.8;
@@ -212,14 +210,12 @@ router.post('/generatePDF', async (req, res) => {
         const tdsDeduction = grossEarnings * 0.1;
         const netEarnings = grossEarnings - tdsDeduction;
 
-        // Create a new PDF document
         const doc = new PDFDocument();
 
-        // Pipe the PDF document to a writable stream
+      
         const stream = fs.createWriteStream('Form16A.pdf');
         doc.pipe(stream);
 
-        // Add content to the PDF
         doc.fontSize(12);
         doc.text('Financial Year: ' + financialYear);
         doc.text('Quarter: ' + quarter);
@@ -236,15 +232,15 @@ router.post('/generatePDF', async (req, res) => {
                 ['TDS Deduction', tdsDeduction],
                 ['Net Earnings', netEarnings]
             ],
-            // Position of the table
+           
             x: 50,
             y: doc.y
         });
 
-        // Finalize the PDF
+       
         doc.end();
 
-        // Send the PDF as a response
+       
         stream.on('finish', () => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', 'attachment; filename=Form16A.pdf');
@@ -282,6 +278,7 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
+
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
   
@@ -294,9 +291,12 @@ router.post('/api/verify-OneTP', TaxverifyOTP);
 
 
  
+// router.post('/send-OneTP', sendOTP);
+// router.post('/verify-OneTP', verifyOTP);
 
 
  
+
 
  router.use(express.json());
 
@@ -1147,6 +1147,7 @@ router.post('/accountStatement', async (request, response) => {
         return response.status(500).json({ message: 'Internal Server Error at Account Statement Addition' });
     }
 });
+
 
 
 const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
