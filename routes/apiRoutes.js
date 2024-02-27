@@ -2,10 +2,15 @@ const express = require("express");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
-const AWS = require("aws-sdk")
+const AWS = require("aws-sdk");
+
 
 
  const {generateForm16ASchema} = require('../models/userAccountDetails');
+
+ const FixedDeposites = require("../models/fixedDeposites");
+ const LoanAccount = require("../models/loanaccounts");
+
 
 
 const {UserDetailsAccounts} = require('../models/userAccountDetails');
@@ -18,11 +23,15 @@ const inwardController = require('../controllers/inwardController');
 const paymentTransactionController = require('../controllers/paymentController');
 const transferTransactionController = require('../controllers/transferController');
 
+const axios = require('axios');
+
+
 const { sendEmail } = require("../emailServiecs");
 
 
 
-const axios = require('axios');
+
+
 
 // aadhar
 router.post('/validate-aadhaar', async (req, res) => {
@@ -75,6 +84,26 @@ router.post('/validate-aadhaar', async (req, res) => {
 
 
 
+router.get('/panValid/:panNumber', async (req, res) => {
+    const {panNumber} = req.params
+
+    const options = {
+      method: 'GET',
+      url: `https://pan-card-verification-at-lowest-price.p.rapidapi.com/verifyPan/${panNumber}`,
+      headers: {
+        'x-rapid-api': 'rapid-api-database',
+        'X-RapidAPI-Key': '99dd840abdmshd183db508cdec97p19a7f3jsnac9961b49d13',
+        'X-RapidAPI-Host': 'pan-card-verification-at-lowest-price.p.rapidapi.com'
+      }
+    };
+    
+    try {
+        const response = await axios.request(options);
+        return res.status(200).json({data:response.data})
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 router.post("/generateCertificate", async (request, response) => {
   try {
@@ -169,9 +198,6 @@ function calculateFinancialYearTax(interestPaid) {
 
 
 
- 
-
-
 router.post('/generatePDF', async (req, res) => {
     try {
         const { financialYear, quarter } = req.body;
@@ -235,9 +261,8 @@ router.post('/generatePDF', async (req, res) => {
 
 
 
-const inwardController = require('../controllers/inwardController');
-const paymentTransactionController = require('../controllers/paymentController');
-const transferTransactionController = require('../controllers/transferController');
+
+
 
 
 
@@ -249,12 +274,11 @@ router.get('/transfer-Type', transferTransactionController.getTransferTransactio
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
-// const Applicants = require('../models/applicant');
+
+
 const { TaxverifyOTP, generatedOTP, resendOTP   } = require("../controllers/otpController");
 
   
@@ -265,27 +289,35 @@ router.post('/api/resend-otp ',  resendOTP);
 // router.post('/send-OneTP', TaxsendOTP);
 router.post('/api/verify-OneTP', TaxverifyOTP);
 
->>>>>>> 1c8f4b045e5ebc80bd92e9a713edf83a6f22ae78
+
  
 // router.post('/send-OneTP', sendOTP);
 // router.post('/verify-OneTP', verifyOTP);
 
 
-// scheduled ends
+ 
+
 
  router.use(express.json());
 
-// 
+
+
 
 router.get("/",(req,res)=>{
     res.send("royal islamic bank server api routes")
 })
 
-const {Applicants,QuickFundTransferModel} =require('../models/applicant');
-const sendOTP = require('../utils/sendOtp');
 
 
-const nodemailer = require('nodemailer');
+
+
+const UserDetailsFixeddeposit = require('../models/fixeddepositDetails');
+
+
+
+
+
+//const nodemailer = require('nodemailer');
 
 
 const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
@@ -293,26 +325,21 @@ const UserDetailsFixeddeposit = require('../models/fixeddepositDetails')
 
 
 
-const {PayLaterAccount} = require('../models/userAccountDetails');
+
+
+//const bcrypt = require('bcrypt');
 
 
 
 
 
-
-const bcrypt = require('bcrypt');
-
-
-
-
-
-
-
+router.get("/",(req,res)=>{
+  res.send("royal islamic bank server api routes")
+})
 
 
 router.post('/purchase', async (request, response) => {
     try {
-         
 
         const {
             vehicleRegNum, vehicleMake, vehicleModel,
@@ -355,9 +382,21 @@ router.post('/purchase', async (request, response) => {
   }catch (error) {
         console.error(error.message, 'purchase-error');
         return response.status(500).json({ error: 'Internal Server Error' });
+
     }
+  });
   
-});
+  async function generatePurchaseOrderNumber() {
+    try {
+      const latestPurchaseOrder = await UserDetailsAccounts.findOne().sort({ purchaseOrderNumber: -1 }).limit(1);
+      const lastOrderNumber = latestPurchaseOrder ? latestPurchaseOrder.purchaseOrderNumber : 0;
+      const newOrderNumber = lastOrderNumber + 1;
+      return newOrderNumber;
+    } catch (error) {
+      console.error('Error during purchase order number generation:', error);
+      throw error;
+    }
+  }
 
 
 
@@ -531,9 +570,6 @@ router.post('/verify-otp', async (request, response)=> {
     }
 });
 
-
-
-
   router.post('/creditcarddetails', async (request, response) => {
     try {
         const { userAccountNumber, userCreditCardDetails} = request.body;
@@ -691,6 +727,7 @@ router.put('/update-domesticcardusage', async (request, response) => {
 
 
 
+
 // Route for generating debit card PIN
 router.post('/generate-Debit-Card-Pin', async (req, res) => {
     try {
@@ -726,7 +763,6 @@ router.post('/generate-Debit-Card-Pin', async (req, res) => {
     }
   });
   
-
 
 
 
@@ -931,6 +967,7 @@ router.put('/updateInternationalLimits/:accountNumber', async (request, response
 
 
 
+
 const addPayLater=async()=>{
     try {
         const payLater = new PayLaterAccount({
@@ -1086,6 +1123,7 @@ router.post('/debit-notification', async (req, res) => {
 });
 
 
+
 router.post('/accountStatement', async (request, response) => {
     try {
         const { userAccountNumber, transactions } = request.body;
@@ -1165,12 +1203,15 @@ router.put('/payLaterAccount/pay', async (req, res) => {
       if (!payLaterAccount) {
         return res.status(404).json({ message: 'PayLater account not found' });
       }
-      payLaterAccount.utilisedLimit = 0;
-      payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
-      payLaterAccount.dueDate = '';
-      await payLaterAccount.save();
-  
-      return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     if(payLaterAccount.totalAmountPayable>0){
+        payLaterAccount.utilisedLimit = 0;
+        payLaterAccount.availableLimit = payLaterAccount.totalCreditLimit;
+        payLaterAccount.dueDate = '';
+        payLaterAccount.totalAmountPayable = 0;
+        await payLaterAccount.save();
+    
+        return res.status(200).json({ message: 'Payment successful', payLater: payLaterAccount });
+     }
     } catch (e) {
       console.log(e, 'payLaterAPI');
   
@@ -1446,6 +1487,7 @@ router.post('/fastagRecharge', async (request, response) => {
     }
    
 });
+
 
 
 
@@ -1780,11 +1822,158 @@ router.post('/autodebit/no', async (req, res) => {
     }
 });
 
-
-
-
-
-
-
-module.exports = router;
-
+router.post("/loan-accounts", async (req, res) => {
+    try {
+      const newLoanAccount = new LoanAccount(req.body);
+      const savedLoanAccount = await newLoanAccount.save();
+      res.json(savedLoanAccount);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  
+  });
+  
+  // Get all loan accounts
+  router.get("/loan-accounts", async (req, res) => {
+  
+      try {
+        const loanAccounts = await LoanAccount.find();
+        res.json(loanAccounts);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+    
+    router.get("/loan-accounts/:id", async (req, res) => {
+      const { id } = req.params;
+    
+      try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({ message: "Invalid Loan Account ID" });
+        }
+    
+        const loanAccount = await LoanAccount.findOne({ _id: id });
+    
+        if (!loanAccount) {
+          return res.status(404).json({ message: "Loan Account Not Found" });
+        }
+    
+        const {
+          accountnumber,
+          sanctionedAmount,
+          principalAmount,
+          currentAmount,
+          dueDate,
+          overdueAmount /* other fields */,
+        } = loanAccount;
+    
+        const loanAccountDetails = {
+          accountnumber,
+          sanctionedAmount,
+          principalAmount,
+          currentAmount,
+          dueDate,
+          overdueAmount,
+        };
+    
+        res.status(200).json({ loanAccountDetails });
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+    
+  
+    router.post("/fixeddeposites", async (req, res) => {
+      try {
+        const fixedDeposites = new FixedDeposites(req.body);
+        await fixedDeposites.save();
+    
+        return res
+          .status(200)
+          .json({ message: "Fixed deposit details saved successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    router.get("/fixeddeposites", async (req, res) => {
+      try {
+        const allfixeddeposites = await FixedDeposites.find({});
+        res.json(allfixeddeposites);
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+  
+    router.post("/generate-pdf", async (req, res) => {
+      const { email, selectedOption } = req.body;
+    
+      try {
+        let selectedOption = await FixedDeposites.findOne({ userEmailId: email });
+    
+        if (!selectedOption) {
+          return res
+            .status(400)
+            .json({ success: false, message: "User not found." });
+        }
+    
+        if (selectedOption === "sendAdvice") {
+          await sendAdviceEmail(email);
+        } else if (selectedOption === "downloadDevice") {
+          await generateAndDownloadPDF(res);
+        } else {
+          return res
+            .status(400)
+            .json({ success: false, message: "Invalid selected option." });
+        }
+        async function sendAdviceEmail(email) {
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            service: "gmail",
+            port: 465,
+            auth: {
+              user: "meenakshichitikila@gmail.com",
+              pass: "Meenakshi@1234",
+            },
+          });
+        
+          const mailOptions = {
+            from: "meenakshichitikila@gmail.com",
+            to: email,
+            subject: "FD Advice",
+            text: "Here is your FD advice.",
+          };
+        
+          await transporter.sendMail(mailOptions);
+        }
+        
+        async function generateAndDownloadPDF(res) {
+          const pdfDoc = await pdfLib.Document.create();
+          const page = pdfDoc.addPage();
+          const { width, height } = page.getSize();
+          page.drawText("Fixed Deposit Advice", { x: 50, y: height - 50 });
+        
+          const pdfBytes = await pdfDoc.save();
+        
+          res.setHeader("Content-Type", "application/pdf");
+          res.setHeader("Content-Disposition", "attachment; filename=fd_advice.pdf");
+          res.send(pdfBytes);
+        }
+        res.json({
+          success: true,
+          message: "PDF generated or email sent successfully.",
+        });
+      } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error." });
+      }
+    });
+    
+  
+  module.exports = router;
+  
+   
